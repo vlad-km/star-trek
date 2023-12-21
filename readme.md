@@ -92,6 +92,8 @@ ___
 ## Relevant information
 1. Shozo TAKEOKA    http://www.takeoka.org/~take/trek/trek-man-e.html
 2. Super Star Trek  https://www.atariarchives.org/bcc1/showpage.php?page=275
+3. Mike Mayfield’s  http://www.dunnington.u-net.com/public/startrek/STTR1
+4. Terry Newton     http://newton.freehostia.com/hp/bas/TREKPT.txt
 
 
 
