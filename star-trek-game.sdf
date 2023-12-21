@@ -1,0 +1,10 @@
+;;; -*- mode:lisp; coding:utf-8  -*-
+(lores:defsys :startrek-game
+    :path  "/git/startrek-game"
+    :components ((:module "src"
+                   (:file "console")
+                   (:file "game")
+                   (:file "fsm"))))
+
+
+;;; EOF
