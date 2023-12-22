@@ -975,10 +975,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                ((< *energy* (/ *full-energy* 10)) (setq *condi* "YELLOW"))
                (t  (setq *condi* "GREEN"))))))
 
-;;;
-;;; short range sensor
-;;;(defmacro srs() (short-range-sensor))
 
+;;; short range sensor
 (defun short-range-sensor ()
   (let ((fff))
     (set-condition)
@@ -1025,7 +1023,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "   T   PHOTON TORPEDO DATA~%")
   (display "   B   STARBASE NAV DATA~%")
   (display "   N   DIRECTION/DISTANCE CALCULATOR~%")
-  (display "   Z  GALAXY 'REGION NAME' MAP~%"))
+  (display "   Z   GALAXY 'REGION NAME' MAP~%"))
 
 
 ;;; computer state report display
