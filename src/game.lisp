@@ -157,12 +157,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 (defun title ()
-  (format *so* "THE USS ENTERPRISE --- NCC-1701~%")
-  (format *so* "                  ,------*------,~%" )
-  (format *so* "  ,-------------   '---  ------'~%" )
-  (format *so* "   '-------- --'      / /~%" )
-  (format *so* "       ,---' '-------/ /--,~%" )
-  (format *so* "        '----------------'~%" )
+  (display "THE USS ENTERPRISE --- NCC-1701~%")
+  (display "                  ,------*------,~%" )
+  (display "  ,-------------   '---  ------'~%" )
+  (display "   '-------- --'      / /~%" )
+  (display "       ,---' '-------/ /--,~%" )
+  (display "        '----------------'~%" )
   )
 
 (defun init()
@@ -279,14 +279,14 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; new mission display
 (defun print-mission()
-  (format *so* "~%YOUR ORDERS ARE AS FOLLOWS:~%")
-  (format *so* "--------------------------~%")
-  (format *so* "   DESTROY THE ~a KLINGON WARSHIPS WHICH HAVE INVADED~%"
+  (display "~%YOUR ORDERS ARE AS FOLLOWS:~%")
+  (display "--------------------------~%")
+  (display "   DESTROY THE ~a KLINGON WARSHIPS WHICH HAVE INVADED~%"
           *klingon-total*)
-  (format *so* "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS~%")
-  (format *so* "   ON STARDATE ~d. THIS GIVES YOU ~a DAYS.~%"
+  (display "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS~%")
+  (display "   ON STARDATE ~d. THIS GIVES YOU ~a DAYS.~%"
           (+ *time0* *t-period*) *t-period* )
-  (format *so*
+  (display
           "   THERE ~a ~a STARBASE~a IN THE GALAXY FOR RESUPPLYING YOUR SHIP.~%~%"
           (if (= *base-total* 1) "IS" "ARE")
           *base-total*
@@ -295,12 +295,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; state :accept-command display prompt
 (defun accept-message ()
-  (format *so* "~%ARE YOU READY TO ACCEPT COMMAND (Y/N)?~%"))
+  (display "~%ARE YOU READY TO ACCEPT COMMAND (Y/N)?~%"))
 
 
 ;;; help display
 (defun help-com ()
-  (format *so* "ENTER ONE OF THE FOLLOWING:~%
+  (display "ENTER ONE OF THE FOLLOWING:~%
 --------------------------
    W   WARP
    S   FOR SHORT RANGE SENSOR SCAN
@@ -435,7 +435,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 ;;; input message
 (defun input-course-message (man)
   (setq *last-name* man)
-  (format *so* "COURSE (0-8, -1)"))
+  (display "COURSE (0-8, -1)"))
 
 ;;; input state
 (defun input-course-check (c1)
@@ -443,7 +443,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         ((= c1 -1) nil)
         (t  (cond ((or (< c1 0) (> c1 8))
                    (stc/terpri)
-                   (format *so* "   ~a: INCORRECT COURSE DATA, SIR!~%" *last-name*)
+                   (display "   ~a: INCORRECT COURSE DATA, SIR!~%" *last-name*)
                    nil)
                   (t (if (= c1 8)
                          (setq *new-course* 0)
@@ -453,7 +453,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; warp message
 (defun nav-factor-message (x)
-  (format *so* "WARP FACTOR (0-~a)" x))
+  (display "WARP FACTOR (0-~a)" x))
 
 ;;; warp state1
 (defun nav-factor (w1)
@@ -462,11 +462,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            nil)
           ((and (< wdamage 0)(> w1 0.2))
            (stc/terpri)
-           (format *so* "WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2~%")
+           (display "WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2~%")
            nil)
           ((or (< w1 0)(> w1 8))
            (stc/terpri)
-           (format *so* "CHIEF ENGINEER SCOTT: THE ENGINES WON'T TAKE WARP ~a!~%" w1)
+           (display "CHIEF ENGINEER SCOTT: THE ENGINES WON'T TAKE WARP ~a!~%" w1)
            nil)
           (t w1))))
 
@@ -475,13 +475,13 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (let ((n (floor (+ (* w1 8) 0.5))))
     (cond ((< *energy* n)
            (stc/terpri)
-           (format *so* "ENGINEERING:   INSUFFICIENT ENERGY AVAILABLE~%")
-           (format *so* "               FOR MANEUVERING AT WARP~a!~%" w1)
+           (display "ENGINEERING:   INSUFFICIENT ENERGY AVAILABLE~%")
+           (display "               FOR MANEUVERING AT WARP~a!~%" w1)
            (cond ((or (< *shield* (- n *energy*)) (< (aref *ddd* 7) 0))
                   t)
                  (t (stc/terpri)
-                    (format *so* "DEFLECTOR CONTROL ROOM:  ~a UNITS OF ENERGY~%" *shield*)
-                    (format *so* "                         PRESENTLY DEPLOYED TO SHIELDS~%")))
+                    (display "DEFLECTOR CONTROL ROOM:  ~a UNITS OF ENERGY~%" *shield*)
+                    (display "                         PRESENTLY DEPLOYED TO SHIELDS~%")))
            t)
           (t n))))
 
@@ -502,16 +502,16 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun disp-quad-name(qq)
   (stc/quad qq)
   (cond ((= *time0* *time*)
-         (format *so* "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED~%")
-         (format *so* "IN THE GALACTIC QUADRANT ~a~%" qq))
-        (t (format *so* "NOW ENTERING ~a QUADRANT...~%" qq))))
+         (display "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED~%")
+         (display "IN THE GALACTIC QUADRANT ~a~%" qq))
+        (t (display "NOW ENTERING ~a QUADRANT...~%" qq))))
 
 ;;; display alarm: damaged
 (defun repo-entering-quad-stat ()
   (when (/= *c-klingons* 0)
-    (format *so* "COMBAT AREA CONDITION RED ~%"))
+    (display "COMBAT AREA CONDITION RED ~%"))
   (when (<= *shield* 200)
-    (format *so* "SHIELDS DANGEROUSLY LOW ~%")))
+    (display "SHIELDS DANGEROUSLY LOW ~%")))
 
 ;;;
 (defun enter-quad1 ()
@@ -527,11 +527,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (or (> *energy* 10) (zerop (aref *ddd* 7))))
       (return-from energy-check t))
   (stc/terpri)
-  (format *so* "** FATAL ERROR **~%")
-  (format *so* "YOU'VE JUST STRANDED YOUR SHIP IN SPACE~%")
-  (format *so* "YOU HAVE INSUFFICIENT MANEUVERING ENERGY~%")
-  (format *so* "AND SHIELD CONTROL IS PRESENTLY INCAPABLE OF~%")
-  (format *so* "CROSS-CIRCUITING TO ENGINE ROOM!!~%")
+  (display "** FATAL ERROR **~%")
+  (display "YOU'VE JUST STRANDED YOUR SHIP IN SPACE~%")
+  (display "YOU HAVE INSUFFICIENT MANEUVERING ENERGY~%")
+  (display "AND SHIELD CONTROL IS PRESENTLY INCAPABLE OF~%")
+  (display "CROSS-CIRCUITING TO ENGINE ROOM!!~%")
   nil )
 
 
@@ -554,9 +554,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                     (setf (aref *ddd* ii) 0)
                     (cond ((not flag)
                            (stc/terpri)
-                           (format *so* "DAMAGE CONTROL REPORT:  ~%")
+                           (display "DAMAGE CONTROL REPORT:  ~%")
                            (setq flag t)))
-                    (format *so* "~a REPAIR COMPLETED.~%" (device-name ii)))))))))
+                    (display "~a REPAIR COMPLETED.~%" (device-name ii)))))))))
 
 ;;; note:
 (defun damage-by-warp()
@@ -566,10 +566,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (setq damdev (rnd1-8))
            (incf (aref *ddd* damdev)
                  (cond ((< (random 10) 6)
-                        (format *so* "DAMAGE CONTROL REPORT:  ~a DAMAGED~%"
+                        (display "DAMAGE CONTROL REPORT:  ~a DAMAGED~%"
                                 (device-name damdev))
                         (* -1 (1+ (/ (random 500) 100))))
-                       (t (format *so* "DAMAGE CONTROL REPORT:  ~a STATE OF REPAIR IMPROVED~%"
+                       (t (display "DAMAGE CONTROL REPORT:  ~a STATE OF REPAIR IMPROVED~%"
                                   (device-name damdev))
                           (1+ (/ (random 300) 100)))))))))
 
@@ -605,13 +605,13 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                (cond ((exit-quad n x0 y0 dx dy w1 old-qx old-qy)
                       (enter-quad) t)
                      (t nil))))
-            (t (format *so* "(~a,~a)" *ex* *ey*)))
+            (t (display "(~a,~a)" *ex* *ey*)))
       (when (daref *sec* *ex* *ey*)
         (stc/terpri)
         (setq *ex* (floor(- x dx)))
         (setq *ey* (floor(- y dy)))
-        (format *so* "WARP ENGINES SHUT DOWN AT ")
-        (format *so* "SECTOR ~a , ~a DUE TO BAD NAVAGATION" *ex* *ey*)
+        (display "WARP ENGINES SHUT DOWN AT ")
+        (display "SECTOR ~a , ~a DUE TO BAD NAVAGATION" *ex* *ey*)
         (return)))
     (sdref *sec* *ex* *ey* 'E)
     (dec-energy n)
@@ -636,11 +636,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (when (> *qy* 7) (setq flag t) (setq *qy* 7) (setq *ey* 7))
     (cond (flag
            (stc/terpri)
-           (format *so* "LT. UHURA: MESSAGE FROM STARFLEET COMMAND:~%")
-           (format *so* "      PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER~%")
-           (format *so* "      IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.~%~%")
-           (format *so* "CHIEF ENGINEER SCOTT:  WARP ENGINES SHUT DOWN~%")
-           (format *so* "                       AT SECTOR ~a,~a OF QUADRANT ~a,~a~%"
+           (display "LT. UHURA: MESSAGE FROM STARFLEET COMMAND:~%")
+           (display "      PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER~%")
+           (display "      IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.~%~%")
+           (display "CHIEF ENGINEER SCOTT:  WARP ENGINES SHUT DOWN~%")
+           (display "                       AT SECTOR ~a,~a OF QUADRANT ~a,~a~%"
                    *ex* *ey* *qx* *qy*)
            (sdref *sec* *ex* *ey* 'E)
            (when (> *time* (+ *time0* *t-period*))
@@ -657,7 +657,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun dec-energy (n)
   (when (< (decf *energy* (+ n 10)) 0)
     (stc/terpri)
-    (format *so* "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.~%")
+    (display "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.~%")
     (incf *shield* *energy*)
     (setq *energy* 0)
     (when (<= *shield* 0)
@@ -667,8 +667,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun long-range-sensor()
   (let ((x) (y) (qqq))
     (cond ((< (aref *ddd* 3) 0)
-           (format *so* "~%LONG RANGE SENSORS ARE INOPERABLE.~%"))
-          (t (format *so* "~%LONG RANGE SCAN FOR QUADRANT ~a,~a~%" *qx* *qy*)
+           (display "~%LONG RANGE SENSORS ARE INOPERABLE.~%"))
+          (t (display "~%LONG RANGE SCAN FOR QUADRANT ~a,~a~%" *qx* *qy*)
              (dotimes (i 3)
                (dotimes (j 3)
                  (setq x (+ *qx* i -1))
@@ -676,35 +676,35 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                  (cond ((and (>= x 0)(<= x 7)(>= y 0)(<= y 7))
                         (setq qqq (daref *ggg* x y))
                         (setf (quad-visit qqq) t)
-                        (format *so* " ~a~a~a"
+                        (display " ~a~a~a"
                                 (quad-klingon qqq)
                                 (quad-base qqq)
                                 (quad-star qqq)))
-                       (t (format *so* " ***"))))
-               (format *so* "~%"))))))
+                       (t (display " ***"))))
+               (display "~%"))))))
 
 ;;; display report "no enemy"  by  Spok
 (defun noenemy ()
-  (format *so* "~%")
-  (format *so* "SCIENCE OFFICER SPOCK:   SENSORS SHOW NO ENEMY SHIPS~%")
-  (format *so* "                         IN THIS QUADRANT~%"))
+  (display "~%")
+  (display "SCIENCE OFFICER SPOCK:   SENSORS SHOW NO ENEMY SHIPS~%")
+  (display "                         IN THIS QUADRANT~%"))
 
 ;;; display phaser message
 (defun phaser-message ()
   (cond  ((< (aref *ddd* 4) 0)
           (stc/terpri)
-          (format *so* "PHASERS INOPERATIVE.~%")
+          (display "PHASERS INOPERATIVE.~%")
           (return-from phaser-message (values)))
          ((<= *c-klingons* 0)
           (noenemy)
           (return-from phaser-message (values)))
          ((< (aref *ddd* 8) 0)
           (stc/terpri)
-          (format *so* "COMPUTER FAILURE HAMPERS ACCURACY.~%"))
+          (display "COMPUTER FAILURE HAMPERS ACCURACY.~%"))
          (t (stc/terpri)
-            (format *so* "PHASERS LOCKED ON TARGET.~%")))
-  (format *so* "ENERGY AVAILABLE = ~a UNITS~%" *energy*)
-  (format *so* "NUMBER OF UNITS TO FIRE ?"))
+            (display "PHASERS LOCKED ON TARGET.~%")))
+  (display "ENERGY AVAILABLE = ~a UNITS~%" *energy*)
+  (display "NUMBER OF UNITS TO FIRE ?"))
 
 ;;; display current phaser state
 (defun phaser4 (x)
@@ -723,12 +723,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
              (setq h (floor (* (/ h1 (klingon-distance i)) (+ 2 (/(random 10)10)))))
              (cond ((<= h (* (klingon-energy k) 0.15))
                     (stc/terpri)
-                    (format *so* "SENSORS SHOW NO DAMAGE TO ENEMY AT ~a,~a~%"  kx ky))
+                    (display "SENSORS SHOW NO DAMAGE TO ENEMY AT ~a,~a~%"  kx ky))
                    (t (setq ke (decf (klingon-energy k) h))
-                      (format *so* "~a UNIT HIT ON KLINGON AT SECTOR ~a,~a~%" h kx ky)
+                      (display "~a UNIT HIT ON KLINGON AT SECTOR ~a,~a~%" h kx ky)
                       (cond ((<= ke 0)
                              (delete-klingon i))
-                            (t (format *so* "SENSORS SHOW ~d UNITS REMAINING~%" ke))))))))))
+                            (t (display "SENSORS SHOW ~d UNITS REMAINING~%" ke))))))))))
 
 
 ;;; drop star
@@ -742,7 +742,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq k (aref *kkk* i))
     (setq kx (klingon-x k))
     (setq ky (klingon-y k))
-    (format *so* "*** KLINGON DESTROYED ***~%")
+    (display "*** KLINGON DESTROYED ***~%")
     (decf *c-klingons*)
     (decf *klingon-total*)
     (sdref *sec* kx ky nil)
@@ -773,10 +773,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 ;;; torpedo
 (defun torpedo-message ()
   (cond ((<= *torpedo* 0)
-         (format *so* "~%ALL PHOTON TORPEDOES EXPENDED.~%"))
+         (display "~%ALL PHOTON TORPEDOES EXPENDED.~%"))
         ((< (aref *ddd* 5) 0)
-         (format *so* "~%PHOTON TUBES ARE NOT OPERATIONAL.~%"))
-        (t (format *so* "PHOTON TORPEDO ")))
+         (display "~%PHOTON TUBES ARE NOT OPERATIONAL.~%"))
+        (t (display "PHOTON TORPEDO ")))
   (input-course-message "ENSIGN CHEKOV"))
 
 
@@ -789,7 +789,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         (obj))
     (setq x1 (cal-vec *cx* course))
     (setq y1 (cal-vec *cy* course))
-    (format *so* "TORPEDO TRACK: ")
+    (display "TORPEDO TRACK: ")
     (while repeat
            (incf x x1)
            (incf y y1)
@@ -797,70 +797,70 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (setq y3 (floor (+ y 0.5)))
            (setq obj (daref *sec* x3 y3))
            (cond ((or (< x3 0) (> x3 7) (< y3 0)(> y3 7))
-                  (format *so* "~%TORPEDO MISSED.~%")
+                  (display "~%TORPEDO MISSED.~%")
                   (return-from torpedo-fire (values)))
                  ((eql obj 'k)
-                  (format *so* "~%")
+                  (display "~%")
                   (delete-klingon-xy x3 y3)
                   (when (<= *klingon-total* 0)
                     (setq *success* t))
                   (return-from torpedo-fire (values)))
                  ((eql obj 's)
-                  (format *so* "~%STAR AT ~a, ~a ABSORBED TORPEDO ENERGY.~%" x3 y3)
+                  (display "~%STAR AT ~a, ~a ABSORBED TORPEDO ENERGY.~%" x3 y3)
                   (delete-star x3 y3)
                   (return-from torpedo-fire (values)))
                  ((eql obj 'b)
-                  (format *so* "~%*** STARBASE DESTROYED ***~%")
+                  (display "~%*** STARBASE DESTROYED ***~%")
                   (delete-base x3 y3)
                   (destroy-base)
                   (return-from torpedo-fire (values))))
-           (format *so* "(~a,~a)" x3 y3))))
+           (display "(~a,~a)" x3 y3))))
 
 
 (defun destroy-base ()
   (cond ((or (> *base-total* 0) (> *klingon-total* (- *time* *time0* *t-period*)))
-         (format *so* "~%STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER~%")
-         (format *so* "COURT MARTIAL!~%")
+         (display "~%STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER~%")
+         (display "COURT MARTIAL!~%")
          (setq *docked* nil)
          (setq *klingon-attack* t))
-        (t (format *so* "~%THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND~%")
-           (format *so* "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!~%")
+        (t (display "~%THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND~%")
+           (display "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!~%")
            (end-of-mission))))
 
 ;;; shield message
 (defun shield-message ()
   (if (< (aref *ddd* 7) 0)
       (progn
-        (format *so* "~%SHIELD CONTROL INOPERABLE.~%")
+        (display "~%SHIELD CONTROL INOPERABLE.~%")
         (state :mloop-command))
-      (format *so* "~%ENERGY AVAILABLE =~a.  NUMBER OF UNITS TO SHIELDS ?"
+      (display "~%ENERGY AVAILABLE =~a.  NUMBER OF UNITS TO SHIELDS ?"
               (+ *energy* *shield*))))
 
 ;;; shield state
 (defun shield (x)
   (cond ((or (< x 0) (= x *shield*))
-         (format *so* "SHIELDS UNCHANGED~%"))
+         (display "SHIELDS UNCHANGED~%"))
         ((> x (+ *energy* *shield*))
-         (format *so* "~%SHIELD CONTROL:  THIS IS NOT THE FEDERATION TREASURY~%" )
-         (format *so* "SHIELDS UNCHANGED~%"))
+         (display "~%SHIELD CONTROL:  THIS IS NOT THE FEDERATION TREASURY~%" )
+         (display "SHIELDS UNCHANGED~%"))
         (t (incf *energy* (- *shield* x))
            (setq *shield* x)
-           (format *so* "DEFLECTOR CONTROL ROOM:~%")
-           (format *so* "SHIELDS NOW AT ~a UNITS PER YOUR COMMAND~%" *shield*))))
+           (display "DEFLECTOR CONTROL ROOM:~%")
+           (display "SHIELDS NOW AT ~a UNITS PER YOUR COMMAND~%" *shield*))))
 
 
 ;;; damage report
 (defun damage-report()
   (cond ((< (aref *ddd* 6) 0)
-         (format *so* "~%DAMAGE CONTROL REPORT NOT AVAILABLE.~%"))
+         (display "~%DAMAGE CONTROL REPORT NOT AVAILABLE.~%"))
         (t (show-stat-repair)))
   (docked-repair))
 
 (defun show-stat-repair()
-  (format *so* "DEVICE             STATE OF REPAIR~%")
-  (format *so* "------             ---------------~%")
+  (display "DEVICE             STATE OF REPAIR~%")
+  (display "------             ---------------~%")
   (dotimes (i 8)
-    (format *so* "~a ~d~%" (strfor 19 (device-name (1+ i)))
+    (display "~a ~d~%" (strfor 19 (device-name (1+ i)))
             (* (floor (* 100 (aref *ddd* (1+ i)))) 0.1))))
 
 (defun docked-repair()
@@ -880,10 +880,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun need-repair-message (d3)
   (incf d3 *damage-repair-magic-number*)
   (setq d3 (if (>= d3 1)  0.9  d3))
-  (format *so* "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP~%")
-  (format *so* "ESTIMATED TIME TO REPAIR: ~d STARDATES~d~%"
+  (display "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP~%")
+  (display "ESTIMATED TIME TO REPAIR: ~d STARDATES~d~%"
           (* .01 (floor (* 100 D3))))
-  (format *so* "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N) ?:")
+  (display "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N) ?:")
   (setq *d3-repair* d3)
   (state :need-repair))
 
@@ -897,7 +897,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun klingon-attack ()
   (cond ((<= *c-klingons* 0) t)
         (*docked*
-         (format *so* "~%STARBASE SHIELDS PROTECT THE ENTERPRISE.~%")
+         (display "~%STARBASE SHIELDS PROTECT THE ENTERPRISE.~%")
          t)
         (t (dotimes (i 4)
              (let* ((k (aref *kkk* i))(ke (klingon-energy k)) h)
@@ -906,50 +906,50 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                                   (+ 2 (/ (random 10) 10)))))
                  (decf *shield* h)
                  (setf (klingon-energy k)(/ ke  (+ 3 (/ (random 10) 10))))
-                 (format *so* "~a UNIT HIT ON ENTERPRISE FROM SECTOR ~a,~a ~%"
+                 (display "~a UNIT HIT ON ENTERPRISE FROM SECTOR ~a,~a ~%"
                          h (klingon-x k)(klingon-y k))
                  (cond ((<= *shield* 0)
                         (enterprise-destroyed)
                         (return-from klingon-attack))
-                       (t (format *so*  "SHIELDS DOWN TO ~a UNITS~%" *shield* )
+                       (t (display  "SHIELDS DOWN TO ~a UNITS~%" *shield* )
                           (when(>= h 20)
                             (when (and (<= (random 10) 6) (> (/ h *shield*) 0.02))
                               (setq r1 (rnd1-8))
                               (decf (aref *ddd* r1) (+ (/ h *shield*) (/ (random 50) 100)))
-                              (format *so* "DAMAGE CONTROL: ~a DAMAGED BY THE HIT~%"
+                              (display "DAMAGE CONTROL: ~a DAMAGED BY THE HIT~%"
                                       (device-name r1))))))))))))
 
 ;;; Fail 1 energy==0 or timeout
 (defun fail-mission()
-  (format *so* "~%IT IS STARDATE ~d.~%" *time*)
+  (display "~%IT IS STARDATE ~d.~%" *time*)
   (end-of-mission ))
 
 ;;; Fail destroyed
 (defun enterprise-destroyed ()
-  (format *so* "~%THE ENTERPRISE HAS BEEN DESTROYED.~%")
-  (format *so* "  THE FEDERATION WILL BE CONQUERED.~%")
+  (display "~%THE ENTERPRISE HAS BEEN DESTROYED.~%")
+  (display "  THE FEDERATION WILL BE CONQUERED.~%")
   (fail-mission))
 
 ;;; end of mission
 (defun end-of-mission()
-  (format *so* "~%THERE WERE ~a KLINGON BATTLE CRUISERS LEFT AT~%" *klingon-total*)
-  (format *so* "THE END OF YOUR MISSION.~%")
+  (display "~%THERE WERE ~a KLINGON BATTLE CRUISERS LEFT AT~%" *klingon-total*)
+  (display "THE END OF YOUR MISSION.~%")
   (setq *mission-end* t))
 
 ;;; more-mission
 (defun more-mission-message ()
   (cond ((/= *base-total* 0)
-         (format *so* "~%THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER~%")
-         (format *so* "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,~%")
-         (format *so* "LET HIM STEP FORWARD AND ENTER 'AYE'" )
+         (display "~%THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER~%")
+         (display "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,~%")
+         (display "LET HIM STEP FORWARD AND ENTER 'AYE'" )
          (state :more-mission) )))
 
 ;;; success
 (defun success ()
   (let ((x (/ *klingon-org* (- *time* *time0*))))
-    (format *so* "CONGRATULATIONS, CAPTAIN!  THE LAST KLINGON BATTLE CRUISER~%")
-    (format *so* "MENACING THE FEDERATION, HAS BEEN DESTROYED.~%~%")
-    (format *so* "YOUR EFFICIENCY RATING IS ~s" (* x x 1000))))
+    (display "CONGRATULATIONS, CAPTAIN!  THE LAST KLINGON BATTLE CRUISER~%")
+    (display "MENACING THE FEDERATION, HAS BEEN DESTROYED.~%~%")
+    (display "YOUR EFFICIENCY RATING IS ~s" (* x x 1000))))
 
 ;;; DOCKED
 (defun dockedp()
@@ -964,7 +964,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
           (setq *energy* *full-energy*)
           (setq *torpedo* *full-torpedo*)
           (setq *shield* 0)
-          (format *so* "SHIELDS DROPPED FOR DOCKING PURPOSES.~%")
+          (display "SHIELDS DROPPED FOR DOCKING PURPOSES.~%")
           (return-from dockedp t))))
     (setq *docked* nil)
     nil))
@@ -983,56 +983,56 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (let ((fff))
     (set-condition)
     (when (< (aref *ddd* 2) 0)
-      (format *so* "*** SHORT RANGE SENSORS ARE OUT ***~%")
+      (display "*** SHORT RANGE SENSORS ARE OUT ***~%")
       (return-from short-range-sensor nil))
-    (format *so* "   +0-1-2-3-4-5-6-7-+")
+    (display "   +0-1-2-3-4-5-6-7-+")
     (setq fff  *disp-info-funcs*)
     (dotimes (i 8)
-      (format *so* "~%  ~a|" i)
+      (display "~%  ~a|" i)
       (dotimes (j 8)
-        (format *so* "~a "
+        (display "~a "
                 (case  (daref *sec* i j)
                   ((s) "*")
                   ((k) "K")
                   ((b) "B")
                   ((e) "E")
                   (t   "."))))
-      (format *so* "|")
+      (display "|")
       (apply (pop fff) nil))
-    (format *so* "~%")))
+    (display "~%")))
 
 ;;; some messages handler's
 (defconstant *disp-info-funcs*
   (list
-   (lambda() (format *so* "        STARDATE           ~d" (roundnum *time* 4) ))
-   (lambda() (format *so* "        CONDITION          ~a" *condi*))
-   (lambda() (format *so* "        QUADRANT           ~a ~a" *qx* *qy*))
-   (lambda() (format *so* "        SECTOR             ~a ~a" *ex* *ey*))
-   (lambda() (format *so* "        PHOTON TORPEDOES   ~a" *torpedo*))
-   (lambda() (format *so* "        TOTAL ENERGY       ~d" (+ *energy* *shield*)))
-   (lambda() (format *so* "        SHIELDS            ~d" *shield*))
-   (lambda() (format *so* "        KLINGONS REMAINING ~a" *klingon-total*))))
+   (lambda() (display "        STARDATE           ~d" (roundnum *time* 4) ))
+   (lambda() (display "        CONDITION          ~a" *condi*))
+   (lambda() (display "        QUADRANT           ~a ~a" *qx* *qy*))
+   (lambda() (display "        SECTOR             ~a ~a" *ex* *ey*))
+   (lambda() (display "        PHOTON TORPEDOES   ~a" *torpedo*))
+   (lambda() (display "        TOTAL ENERGY       ~d" (+ *energy* *shield*)))
+   (lambda() (display "        SHIELDS            ~d" *shield*))
+   (lambda() (display "        KLINGONS REMAINING ~a" *klingon-total*))))
 
 
 ;;; COMPUTER
 
 ;;; computer help display
 (defun comp-help ()
-  (format *so* "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:~%")
-  (format *so* "-----------------------------------------~%")
-  (format *so* "   G   CUMULATIVE GALTIC RECORD~%")
-  (format *so* "   S   STATUS REPORT~%")
-  (format *so* "   T   PHOTON TORPEDO DATA~%")
-  (format *so* "   B   STARBASE NAV DATA~%")
-  (format *so* "   N   DIRECTION/DISTANCE CALCULATOR~%")
-  (format *so* "   Z  GALAXY 'REGION NAME' MAP~%"))
+  (display "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:~%")
+  (display "-----------------------------------------~%")
+  (display "   G   CUMULATIVE GALTIC RECORD~%")
+  (display "   S   STATUS REPORT~%")
+  (display "   T   PHOTON TORPEDO DATA~%")
+  (display "   B   STARBASE NAV DATA~%")
+  (display "   N   DIRECTION/DISTANCE CALCULATOR~%")
+  (display "   Z  GALAXY 'REGION NAME' MAP~%"))
 
 
 ;;; computer state report display
 (defun computer-message ()
     (if (< (aref *ddd* 8) 0)
-        (format *so* "~%COMPUTER DISABLED.~%")
-        (format *so* "~%COMPUTER ACTIVE AND AWAITING COMMAND~%")))
+        (display "~%COMPUTER DISABLED.~%")
+        (display "~%COMPUTER ACTIVE AND AWAITING COMMAND~%")))
 
 
 ;;; computer itself
@@ -1065,51 +1065,51 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; galaxy map display
 (defun comp-galaxy-name-map()
-  (format *so* "                        THE GALAXY~%")
-  (format *so* "       0     1     2     3     4     5     6     7~%")
-  (format *so* "    +-----+-----+-----+-----+-----+-----+-----+-----+")
+  (display "                        THE GALAXY~%")
+  (display "       0     1     2     3     4     5     6     7~%")
+  (display "    +-----+-----+-----+-----+-----+-----+-----+-----+")
   (dotimes (i 8)
-    (format *so* "~%")
+    (display "~%")
     (dotimes (j 2)
-      (format *so* " ~a" (quad-name (* j 4) i 1)))))
+      (display " ~a" (quad-name (* j 4) i 1)))))
 
 ;;; galaxy quadrant display
 (defun comp-galaxy-rec()
   (let ((x) (qqq))
-    (format *so* "       COMPUTER RECORD OF GALAXY FOR QUADRANT ~a,~a~%" *qx* *qy*)
-    (format *so* "       0     1     2     3     4     5     6     7~%")
-    (format *so* "    +-----+-----+-----+-----+-----+-----+-----+-----+")
+    (display "       COMPUTER RECORD OF GALAXY FOR QUADRANT ~a,~a~%" *qx* *qy*)
+    (display "       0     1     2     3     4     5     6     7~%")
+    (display "    +-----+-----+-----+-----+-----+-----+-----+-----+")
     (dotimes (i 8)
-      (format *so* "~%  ~a |" i)
+      (display "~%  ~a |" i)
       (dotimes (j 8)
         (setq qqq (daref *ggg* i j))
         (cond ((quad-visit qqq)
-               (format *so* " ~a~a~a  "
+               (display " ~a~a~a  "
                        (quad-klingon qqq)
                        (quad-base qqq)
                        (quad-star qqq)))
-              (t (format *so* " ***  ")))))
+              (t (display " ***  ")))))
     (stc/terpri) ))
 
 
 ;;; status report display
 (defun comp-stat-repo()
-  (format *so* "   STATUS REPORT:~%   -------------~%")
-  (format *so* " ~a KLINGON~a LEFT.~%" *klingon-total* (if (> *klingon-total* 1) "S" ""))
-  (format *so* " MISSION MUST BE COMPLETED IN ~d STARDATES.~%"
+  (display "   STATUS REPORT:~%   -------------~%")
+  (display " ~a KLINGON~a LEFT.~%" *klingon-total* (if (> *klingon-total* 1) "S" ""))
+  (display " MISSION MUST BE COMPLETED IN ~d STARDATES.~%"
           (* (/(floor (+ *time0* *t-period* (- *time*))) 10) 10))
   (cond ((> *base-total* 0)
-         (format *so* " THE FEDERATION IS MAINTAINING ~a STARBASE~a IN THE GALAXY.~%~%"
+         (display " THE FEDERATION IS MAINTAINING ~a STARBASE~a IN THE GALAXY.~%~%"
                  *base-total*  (if (> *base-total* 1) "S" "")))
-        (t (format *so* "YOUR STUPIDITY HAS LEFT YOU ON YOUR OWN IN~%")
-           (format *so* "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!~%~%")))
+        (t (display "YOUR STUPIDITY HAS LEFT YOU ON YOUR OWN IN~%")
+           (display "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!~%~%")))
   (damage-report))
 
 
 ;;; torpedo attack display
 (defun comp-torpedo()
   (cond ((<= *c-klingons* 0) (noenemy))
-        (t (format *so* "FROM ENTERPRISE TO KLINGON BATTLE CRUSER~a~%"
+        (t (display "FROM ENTERPRISE TO KLINGON BATTLE CRUSER~a~%"
                    (if (> *c-klingons* 1) "S" ""))
            (dotimes (i 4)
              (cond ((> (klingon-energy (aref *kkk* i)) 0)
@@ -1119,27 +1119,27 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (let* ((k (aref *kkk* i))
          (kx (klingon-x k))
          (ky (klingon-y k)))
-    (format *so* "KLINGON at (~a,~a): DIRECTION = ~d~%" kx ky
+    (display "KLINGON at (~a,~a): DIRECTION = ~d~%" kx ky
             (roundnum (calc-p2p *ex* *ey* kx ky) 3))))
 
 ;;; calculator
 (defun comp-calc-message()
-  (format *so* "DIRECTION/DISTANCE CALCULATOR:~%")
-  (format *so* "YOU ARE AT QUADRANT ~a,~a " *qx* *qy*)
-  (format *so* " SECTOR ~a,~a.~%" *ex* *ey*)
-  (format *so* "PLEASE ENTER INITIAL COORDINATES X Y?"))
+  (display "DIRECTION/DISTANCE CALCULATOR:~%")
+  (display "YOU ARE AT QUADRANT ~a,~a " *qx* *qy*)
+  (display " SECTOR ~a,~a.~%" *ex* *ey*)
+  (display "PLEASE ENTER INITIAL COORDINATES X Y?"))
 
 (defun disp-direct-dist (x0 y0 x1 y1)
-  (format *so* "DIRECTION = ~d " (roundnum (calc-p2p x0 y0 x1 y1) 3))
+  (display "DIRECTION = ~d " (roundnum (calc-p2p x0 y0 x1 y1) 3))
   (pr-distance (- x0 x1)(- y0 y1)))
 
 (defun pr-distance(dx dy)
-    (format *so* "DISTANCE =~d~%" (roundnum (distance-p2p dx dy) 3)))
+    (display "DISTANCE =~d~%" (roundnum (distance-p2p dx dy) 3)))
 
 ;;; starbase nav data
 (defun base-nav()
   (cond ((= *c-bases* 0)
-         (format *so* "MR. SPOCK:  SENSORS SHOW NO STARBASES IN THIS QUADRANT.~%"))
+         (display "MR. SPOCK:  SENSORS SHOW NO STARBASES IN THIS QUADRANT.~%"))
         (t (disp-direct-dist *ex* *ey* *bx* *by*))))
 
 (defun distance-p2p (dx dy)
@@ -1199,7 +1199,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (sdref *sec* newx newy 'k)
            (setf (klingon-x k) newx)
            (setf (klingon-y k) newy)
-           (format *so* "KLINGON AT ~a,~a MOVES TO ~a,~a~%" x y newx newy)))))
+           (display "KLINGON AT ~a,~a MOVES TO ~a,~a~%" x y newx newy)))))
 
 (defun randmove-vec (x)
   (let ((_new)
