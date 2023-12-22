@@ -8,27 +8,28 @@ Rewritten in __`Common Lisp`__ by __`Shozo TAKEOKA, 2006, take@axe-inc.co.jp`__ 
 See __`original/trek.lsp`__ in this repository.
 
 The presented version was adapted for the __`Moren environment, 2017`__ and has not been previously published.
-<< __`Moren environment,2017`__ outdate port, see by ref: https://github.com/vlad-km/moren-electron 
+>>> __`Moren environment,2017`__ `outdate port, see by ref: https://github.com/vlad-km/moren-electron` 
 
-Dedicated to those, who started __`job StarTrek`__ on  __`OS/MFT`__.
+Dedicated to those, who gamed __`StarTrek`__ on  __`OS/MFT`__.
 
 
-## Common Lisp original
-Shozo Takeoka http://www.takeoka.org/~take/trek/trek-man-e.html for details.
-
+___
 
 ## Development status
 Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
 
-> Damn, this code, ancient, as a mammoth shit... 
+>>> `Damn, this code, ancient, as a mammoth shit...` 
+
+
+___
 
 ## Navigation
 
 
 Coordinates System
-displayed as (X,Y), that means `(look below)`: 
-- X: by vertical
-- Y: by horizontal
+displayed as (X,Y), that means (_`see below`_): 
+- X  _`by vertical`_
+- Y  _`by horizontal`_
 
 ___
 <p align="center">
@@ -38,9 +39,9 @@ ___
 </p>
 
 ### Legend
-- E __`Enterprise`__ is at (5,0)
-- K __`Klingon`__ is at (6,7)
-- S __`Star`__
+- E __`Enterprise`__ _`is at (5,0)`_
+- K __`Klingon`__ _`is at (6,7)`_
+- S __`Star`__ _`lot of them`_
 
 ___
 
@@ -63,32 +64,34 @@ ___
 
 ### Commands
 
-- W: _WARP_
-- S: _FOR SHORT RANGE SENSOR SCAN_
-- L: _FOR LONG RANGE SENSOR SCAN_
-- P: _TO FIRE PHASERS_
-- T: _TO FIRE PHOTON TORPEDOES_
-- Z: _TO RAISE OR LOWER SHIELDS_
-- R: _FOR DAMAGE CONTROL REPORTS_
-- C: _TO CALL ON LIBRARY-COMPUTER_
-- XXX: _TO RESIGN YOUR COMMAND_
+- W  _`WARP`_
+- S  _`FOR SHORT RANGE SENSOR SCAN`_
+- L  _`FOR LONG RANGE SENSOR SCAN`_
+- P  _`TO FIRE PHASERS`_
+- T  _`TO FIRE PHOTON TORPEDOES`_
+- Z  _`TO RAISE OR LOWER SHIELDS`_
+- R  _`FOR DAMAGE CONTROL REPORTS`_
+- C  _`TO CALL ON LIBRARY-COMPUTER`_
+- X  _`TO RESIGN YOUR COMMAND`_
 
 
 ### Library Computer Commands
 
-- G: _CUMULATIVE GALTIC RECORD_
-- S: _STATUS REPORT_
-- T: _PHOTON TORPEDO DATA_
-- B: _STARBASE NAV DATA_
-- N: _DIRECTION/DISTANCE CALCULATOR_
-- Z: _GALAXY *REGION NAME* MAP_
+- G  _`CUMULATIVE GALACTIC RECORD`_
+- S  _`STATUS REPORT`_
+- T  _`PHOTON TORPEDO DATA`_
+- B  _`STARBASE NAV DATA`_
+- N  _`DIRECTION/DISTANCE CALCULATOR`_
+- Z  _`GALAXY *REGION NAME* MAP`_
 
+___
 
 ## Supported platform:
 - Windows
 - NodeJS
 - Electron
 
+___
 
 ## Relevant information
 1. Shozo TAKEOKA    http://www.takeoka.org/~take/trek/trek-man-e.html
@@ -97,10 +100,10 @@ ___
 4. Terry Newton     http://newton.freehostia.com/hp/bas/TREKPT.txt
 
 
-
+___
 
 ## Copyright
-Copyright © 2017,2023 Vladimir Mezentsev
+Copyright Â© 2017,2023 Vladimir Mezentsev
 
 
 
