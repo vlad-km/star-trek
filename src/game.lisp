@@ -47,6 +47,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq offset (+ (* row rowsize) col))
     (setf (aref array offset) value) ))
 
+;;; note: bug
 ;;; numbers truncate
 (defconstant *round-base* #(10 10 100 1000 10000))
 
@@ -55,6 +56,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (/ (floor (* num magic)) magic)))
 
 ;;; string constructor
+;;; note: may be js pad-right ?
+;;;       it's very slow
 (defun strfor (max str)
   (let ((len (length str))
         (need)
@@ -89,7 +92,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defconstant *quad-sub*
   #(" I" " II" " III" " IV"))
 
-;; quad accessors
+;;; quad accessors
 (defun quad-name (z5 z4 g5)
   (concat (quad-name1 z5 z4) (quad-name-sub g5 z5)))
 
