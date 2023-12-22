@@ -1,15 +1,16 @@
 # Star Trek game
 This is an old game based on the all time hit __"Star Trek"__. 
 
-The original game was written in __`Basic`__ by __`Mike Mayfieldâ€™s, 1971`__. 
+The original game was written in __`Basic`__ by __`Mike Mayfield's, 1971`__. 
 
 Rewritten in __`Common Lisp`__ by __`Shozo TAKEOKA, 2006, take@axe-inc.co.jp`__ [http://www.takeoka.org/~take/](http://www.takeoka.org/~take/trek/trek-man-e.html). 
 
 See __`original/trek.lsp`__ in this repository.
 
 The presented version was adapted for the __`Moren environment, 2017`__ and has not been previously published.
+<< __`Moren environment,2017`__ outdate port, see by ref: https://github.com/vlad-km/moren-electron 
 
-Dedicated to those, who started __job StarTrek__ on __`OS/MFT`__.
+Dedicated to those, who started __`job StarTrek`__ on  __`OS/MFT`__.
 
 
 ## Common Lisp original
@@ -23,11 +24,11 @@ Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
 
 ## Navigation
 
-Navigation reference
+
 Coordinates System
-displayed (X,Y) means
-- X: vertical
-- Y: horizontal
+displayed as (X,Y), that means `(look below)`: 
+- X: by vertical
+- Y: by horizontal
 
 ___
 <p align="center">
@@ -45,7 +46,7 @@ ___
 
 ## Direction specification (Warp/Torpedo)
 
-*You can specify with real number (ex. floating point).
+You can specify with real number (ex. floating point).
 
 ___
 
@@ -92,14 +93,14 @@ ___
 ## Relevant information
 1. Shozo TAKEOKA    http://www.takeoka.org/~take/trek/trek-man-e.html
 2. Super Star Trek  https://www.atariarchives.org/bcc1/showpage.php?page=275
-3. Mike Mayfield’s  http://www.dunnington.u-net.com/public/startrek/STTR1
+3. Mike Mayfield's  http://www.dunnington.u-net.com/public/startrek/STTR1
 4. Terry Newton     http://newton.freehostia.com/hp/bas/TREKPT.txt
 
 
 
 
 ## Copyright
-Copyright Â© 2017,2023 Vladimir Mezentsev
+Copyright © 2017,2023 Vladimir Mezentsev
 
 
 
