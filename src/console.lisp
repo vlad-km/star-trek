@@ -126,14 +126,13 @@
 
 
 ;;; hide
-(defun stc/hide () (ffi:setprop (*stc* "display") "none"))
+(defun stc/hide () (ffi:setprop (*stc* "style" "display") "none"))
 ;;; show
-(defun stc/show () (ffi:setprop (*stc* "display") ""))
-(defun %set-inner-html (el data)  (ffi:setprop (el "innerText") data))
+(defun stc/show () (ffi:setprop (*stc* "style" "display") "unset"))
 ;;; display quad name
-(defun stc/quad (name) (%set-inner-html *stc-location* (jscl::concat "|  " name "  |")))
+(defun stc/quad (name) (%set-inner-text *stc-location* (jscl::concat "|  " name "  |")))
 ;;; display stardate
-(defun stc/stardate (date)(%set-inner-html *stc-stardate* (roundnum date 4)))
+(defun stc/stardate (date)(%set-inner-text *stc-stardate* (roundnum date 4)))
 
 
 ;;; terpri
