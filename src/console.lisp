@@ -49,113 +49,11 @@
 (defparameter +stc-uss-css+
   (css:inline `(:position "relative" :width "50px" :display "inline" :border "unset")))
 
-
-
-
-#|
-<div id="stc-console"
-class="ui-draggable ui-draggable-handle"
-style="position: absolute; left: 284.987px; top: 40.9957px;
-       height: 400px; width: 600px; border-width: 1px; border-radius: 3px;">
-
-<div id="stc-header-id"
-style="position:relative;left:1px;width:600px;
-     /* border-style:groove; */
-     border-width: 12px;
-     /* border-width: 2px; */
-border-radius: 42px;
-background-color:#24502a;
-color:#28c428;
-font-family:Consolas;
-font-size:12px;">
-
-<span id="stc-uss-id"
-"position:relative
-left:1px
-width:600px;
-border-style:groove;
-border-width: 12px;
-border-radius: 4px;
-ground-color: #24502a;
-color:#28c428;
-font-family:Consolas;
-font-size:12px;">
-
-USS ENTERPRISE NCC-1701 command console </span>
-
-
-
-<span id="stc-location-id"
-style="position:relative;width: 115px;
-border-style: groove;border-radius: 12px;display:inline;
-/* border:unset; */">|     STARBASE DOCK      |</span>
-
-<span> STARDATE </span>
-
-<span id="stc-stardate-id"
-style="position:relative; width:20px; display:inline; border:unset; ">0000</span>
-
-|</div>
-
-<div id="stc-stream-id"
-
-style="
-
-:position:relative;
-left:1px;
-width:600px;
-height:390px;
-border-style: ridge;
-overflow:auto;
-border-radius: 31px;
-color:#19ec34;
-background-color:rgba(0, 0, 0, 1.0);
-font-family:Consolas;
-font-size:13px;"
-
-></div>
-
-<div style="
-    border-style: groove;
-    background-color: green;
-    border-radius: 10px;
-">
-
-<label id="stc-talk-id"
-style="background-color: green;baorder-style: groove;">Wait you command&gt;</label>
-
-<textarea id="stc-input-id"
-
-style="color:black; background-color:rgba(232, 232, 87, 1.0); resize:none; display:inline-table; " rows="1" cols="50" autocapitalize="characters" spellcheck="true"></textarea></div></div>
-
-|#
-
-
 #|
 :|style.ground-color| "#24502a"
 :|style.color| "#28c428"
 :|style.font-family| "Consolas"
 :|style.font-size| "12px"
-|#
-
-
-#|
-(defparameter +stc-header-css+
-  (css:inline `(:position "relative" :left "1px" :width "600px"
-                :border-style "groove" :border-width "1px" :border-radius "3px"
-                :background-color "#24502a" :color "#28c428"
-                :font-family "Consolas" :font-size "12px")))
-
-(defparameter +stc-input-css+
-  (css:inline `(:color "black" :background-color "rgba(232, 232, 87, 1.0)"
-                       :resize "none"
-                       :display "inline-table")))
-
-(defparameter +stc-output-css+
-  (css:inline  `(:position "relative" :left "1px" :width "600px" :height "390px"
-                 :overflow "auto"
-                 :color "#19ec34" :background-color "rgba(0, 0, 0, 1.0)"
-               :font-family "Consolas" :font-size "13px")))
 |#
 
 
