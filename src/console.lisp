@@ -19,6 +19,42 @@
 ;;; Star Trek widget
 
 
+;;; html stream
+#|
+#(STREAM #<FUNCTION> NIL NIL NIL NIL :OUT NIL)
+   0         1       2   3   4   5   6    7
+0 signature
+1 write
+2 read-char
+3 peek-char
+4 kind
+5 data
+6 direction :out
+7 at-line-start
+|#
+
+(defun stc/make-html-output-stream (exists-pre-element)
+  (let* ((buffer exists-pre-element)
+         (fn-append ((jscl::oget buffer "appendChild" "bind") buffer))
+         (fn-scroll ((jscl::oget buffer "scrollIntoView" "bind") buffer)))
+    (vector 'stream
+            ;; write-string
+            (lambda (string) (rx:emit :write-pre (list string fn-append fn-scroll)))
+            nil
+            nil
+            nil
+            nil
+            :out)))
+
+(defun %write-to-html-stream (args)
+  (let ((span (html::empty-span)))
+    (setf (jscl::oget span "innerHTML") (car args))
+    (funcall (second args) span)
+    (funcall (third args) nil)))
+
+(rx:listen :write-pre #'%write-to-html-stream)
+
+
 (defvar *stc-header* nil)
 (defvar *stc-stardate* nil)
 (defvar *stc-location* nil)
@@ -75,11 +111,11 @@
         (html:span :|id| "stc-uss-id"
                    :style (css:inline `(:display "inline"
                                         :border-style "groove"
-                                        :border-radius: "10px"
+                                        :border-radius "10px"
                                         :padding-right "10px"
                                         :padding-left "10px"
                                         :background-color "#24502a"))
-                   :append " USS ENTERPRISE NCC-1701 COMMAND CONSOLE ")))
+                   :append " USS ENTERPRISE NCC-1701 COMMAND CONSOLE "))
 
   (setq *stc-location*
         (html:span  :|id| "stc-location-id"
@@ -91,7 +127,7 @@
                     :|style.border-top-right-radius| "unset"
                     :|style.border-bottom-right-radius| "unset"
                     :|style.margin-left| "40px"
-                    :|style.margin-right| "40px"
+                    ;;:|style.margin-right| "40px"
                     :|style.background-color| "#24502a"
                     :append " STARBASE DOCK "))
 
@@ -149,6 +185,15 @@
                     :|for| "stc-input-id"
                     :append "ENTER COMMAND  >"))
 
+  (setq *stc-stream*
+        (html:pre :|id| "stc-stream"
+                  :|style.margin| "0px"
+                  :|style.position| "relative"
+                  :|style.min-height| "100%"
+                  :|style.box-sizing| "border-box"))
+
+  (setq *so* (stc/make-html-output-stream *stc-stream*))
+
   (setq *stc-output*
         (html:div :|id| "stc-output-id"
                   :|style.position| "relative"
@@ -158,12 +203,13 @@
                   :|style.overflow| "auto"
                   :|style.border-style| "groove"
                   :|style.border-radius| "31px"
-                  :|style.color| "#28c428"
-                  :|style.background-color| "#24502a"
+                  :|style.color| "#b4e7a9"
+                  :|style.background-color| "#081c0b"
                   :|style.font-family| "Consolas"
                   :|style.font-size| "13px"
                   :|style.margin-bottom| "4px"
                   :|style.margin-top| "4px"
+                  :append *stc-stream*
                   ))
 
   (setq *stc*
@@ -175,10 +221,15 @@
                   :append *stc-talk*
                   :append *stc-input*
                   :append-to (html:document-body)))
-  
-  (let ((pvp (#j:$ *stc* )))
-    (funcall ((jscl::oget pvp "draggable" "bind") pvp)))
+
+  (%draggable *stc*)
   nil)
+
+
+;;; jquery features. just adds a class `draggable`to the element
+(defun %draggable (ip)
+  (let ((pvp (#j:$ ip)))
+    (funcall ((jscl::oget pvp "draggable" "bind") pvp))))
 
 
 ;;; hide
