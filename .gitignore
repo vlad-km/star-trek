@@ -1,6 +1,7 @@
 *~
 \#*
 *.js
+loader.lisp
 t/
 bin/
 
