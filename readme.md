@@ -20,6 +20,19 @@ Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
 
 >>> `Damn, this code, ancient, as a mammoth shit...` 
 
+<p align="center">
+  <a href="https://github.com/vlad-km">
+    <img src="images/uss.bmp"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/vlad-km">
+    <img src="images/mistart.bmp"/>
+  </a>
+</p>
+
+
 
 ___
 
