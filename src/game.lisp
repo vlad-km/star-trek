@@ -167,14 +167,13 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defvar *mission-end* nil)     ;; mission terminated
 (defvar *started* nil)
 
-
 (defun title ()
   (display "THE USS ENTERPRISE --- NCC-1701~%")
-  (display "                  ,------*------,~%" )
-  (display "  ,-------------   '---  ------'~%" )
-  (display "   '-------- --'      / /~%" )
-  (display "       ,---' '-------/ /--,~%" )
-  (display "        '----------------'~%" )
+  (display "                  +------*-------,~%" )
+  (display "  ,--------------/------. .------'~%" )
+  (display "  '--------+ +--.      / /~%" )
+  (display "       ,---+ +--------/ /--,~%" )
+  (display "       '-------------------'~%" )
   )
 
 (defun init()
