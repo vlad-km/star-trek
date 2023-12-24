@@ -15,8 +15,9 @@ Dedicated to those, who gamed __`StarTrek`__ on  __`OS/MFT`__.
 
 ___
 
-## Development status
+## Development status - DEBUGGING
 Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
+
 
 >>> `Damn, this code, ancient, as a mammoth shit...` 
 
