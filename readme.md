@@ -27,13 +27,13 @@ Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
   </a>
 </p>
 
+In this implementation the stars are represented by the symbol _`*` _
+
 <p align="center">
   <a href="https://github.com/vlad-km">
     <img src="images/mistart.bmp"/>
   </a>
 </p>
-
-
 
 ___
 
