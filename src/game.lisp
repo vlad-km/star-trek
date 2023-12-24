@@ -366,6 +366,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; main game loop. read command from console, handle it 
 (defun mloop()
+  (#j:console:log "MLOOP" "prev state"  *state-fsm*)
   (stc/stardate *time*)
   ;; cool end mission
   (if (or *success* (<= *klingon-total* 0))
@@ -390,6 +391,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; main game loop. execute entered command
 (defun mloop-command (cmd)
+  (#j:console:log "MLOOP-COMMAND" "state"  *state-fsm* "CMD" cmd)
   (case cmd
     ((W)
      ;; warp
@@ -804,7 +806,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq x1 (cal-vec *cx* course))
     (setq y1 (cal-vec *cy* course))
     (display "TORPEDO TRACK: ")
-    (while repeat
+    (jscl::while repeat
            (incf x x1)
            (incf y y1)
            (setq x3 (floor (+ x 0.5)))
@@ -1200,7 +1202,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         (k  (aref *kkk* i)))
     (setq x (klingon-x k))
     (setq y (klingon-y k))
-    (while repeat
+    (jscl::while repeat
            (setq newx (randmove-vec x))
            (setq newy (randmove-vec y))
            (setq xxx (daref *sec* newx newy))
