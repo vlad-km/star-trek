@@ -270,7 +270,7 @@
   (%jq-on (#j:$ *stc-input*)
          "keyup"
               (lambda (event)
-                (print (list :event event))
+                ;;(print (list :event event))
                 (stc/kb-handler event))))
 
 ;;; jquery features. just adds a class `draggable`to the element
@@ -290,8 +290,8 @@
 (defparameter reg-del (ffi:regexp "[\\n\\r]" "g"))
 
 (defun stc/kb-handler (evt)
-  (#j:console:log "KBH" evt)
-  (#j:console:log "Read keycode" (ffi:getprop  evt "keyCode"))
+  ;;(#j:console:log "KBH" evt)
+  ;;(#j:console:log "Read keycode" (ffi:getprop  evt "keyCode"))
   (let ((el (ffi:getprop evt "target"))
         (data)
         (from-value))
@@ -305,7 +305,7 @@
   (values))
 
 (defun stc/kbd-reader (data)
-  (#j:console:log "kbr" data)
+  ;;(#j:console:log "kbr" data)
   (let ((stream (make-string-input-stream data))
         (sentinel (gensym "EOF"))
         (s)
