@@ -24,48 +24,84 @@
 #(STREAM #<FUNCTION> NIL NIL NIL NIL :OUT NIL)
    0         1       2   3   4   5   6    7
 0 signature
-1 write
+1 write-fn rx:emit
 2 read-char
 3 peek-char
 4 kind
 5 data
 6 direction :out
 7 at-line-start
+8 :html-stream
+9 <pre>.innerHTML  for clear
+
 |#
+
+(defvar *so* nil)   ;; html stream from (stc/make-html-output-stream *stc-stream*)
+(defvar *stc* nil)  ;; html.div id=stc-console 
+(defvar *stc-stardate* nil)
+(defvar *stc-location* nil)
 
 (defun stc/make-html-output-stream (exists-pre-element)
   (let* ((buffer exists-pre-element)
          (fn-append ((jscl::oget buffer "appendChild" "bind") buffer))
          (fn-scroll ((jscl::oget buffer "scrollIntoView" "bind") buffer)))
-    (vector 'stream
-            ;; write-string
-            (lambda (string) (rx:emit :write-pre (list string fn-append fn-scroll)))
-            nil
-            nil
-            nil
-            nil
-            :out)))
+    (vector 'stream                 ;; 0
+            (lambda (string)        ;; 1
+              (rx:emit :write-pre (list string fn-append fn-scroll)))
+            nil                     ;; 2
+            nil                     ;; 3
+            nil                     ;; 4
+            nil                     ;; 5
+            :out                    ;; 6
+            nil                     ;; 7
+            :html-stream            ;; 8
+            (lambda ()              ;; 9
+              (setf (jscl::oget buffer "innerHTML") "")))))
 
 (defun %write-to-html-stream (args)
   (let ((span (html::empty-span)))
-    (setf (jscl::oget span "innerHTML") (car args))
+    (ffi:setprop (span "innerHTML") (car args))
+    ;; (setf (jscl::oget span "innerHTML") (car args))
     (funcall (second args) span)
     (funcall (third args) nil)))
 
 (rx:listen :write-pre #'%write-to-html-stream)
 
+;;; clear console
+(defun stc/clear ()
+  (if (arrayp *so*)
+      (if (eq (aref *so* 8) :html-stream)
+          (progn
+            (funcall (aref *so* 9))
+            (setf (aref *so* 7) nil)
+            (return-from stc/clear (values))))
+      (error "StarTrek: something went wrong with Console buffer")))
+
+;;; terpri
+(defun stc/terpri () (format *so* "~%"))
+;;; hide
+(defun stc/hide () (ffi:setprop (*stc* "style" "display") "none"))
+;;; show
+(defun stc/show () (ffi:setprop (*stc* "style" "display") "unset"))
+;;; display quad name
+(defun stc/quad (name)
+  (ffi:setprop (*stc-location* "innerText") (jscl::concat "|" name "|")))
+;;; display stardate
+(defun stc/stardate (num-date)
+  (ffi:setprop (*stc-stardate* "innerText") (string num-date)))
+
 
 (defvar *stc-header* nil)
-(defvar *stc-stardate* nil)
-(defvar *stc-location* nil)
+#+nil (defvar *stc-stardate* nil)
+#+nil (defvar *stc-location* nil)
 (defvar *stc-uss* nil)
 (defvar *stc-state* nil)
 (defvar *stc-command* nil)
 (defvar *stc-input* nil)
 (defvar *stc-output* nil)
-(defvar *so* nil)
+#+nil (defvar *so* nil)
 (defvar *stc-stream* nil)
-(defvar *stc* nil)
+#+nil (defvar *stc* nil)
 
 (html:declare-element label)
 (html:declare-element pre)
@@ -202,7 +238,8 @@
                   :|style.height| "390px"
                   :|style.overflow| "auto"
                   :|style.border-style| "groove"
-                  :|style.border-radius| "31px"
+                  :|style.border-width| "10px"
+                  :|style.border-radius| "12px"
                   :|style.color| "#b4e7a9"
                   :|style.background-color| "#081c0b"
                   :|style.font-family| "Consolas"
@@ -223,62 +260,63 @@
                   :append-to (html:document-body)))
 
   (%draggable *stc*)
+  (stc/kb-reader-setup)  
   nil)
 
+(defun %jq-on (jse event handler)
+    (funcall ((jscl::oget jse "on" "bind") jse event handler)))
+
+(defun stc/kb-reader-setup ()
+  (%jq-on (#j:$ *stc-input*)
+         "keyup"
+              (lambda (event)
+                (print (list :event event))
+                (stc/kb-handler event))))
 
 ;;; jquery features. just adds a class `draggable`to the element
 (defun %draggable (ip)
   (let ((pvp (#j:$ ip)))
     (funcall ((jscl::oget pvp "draggable" "bind") pvp))))
 
-
-;;; hide
-(defun stc/hide () (ffi:setprop (*stc* "style" "display") "none"))
-;;; show
-(defun stc/show () (ffi:setprop (*stc* "style" "display") "unset"))
-;;; display quad name
-(defun stc/quad (name) (%set-inner-text *stc-location* (jscl::concat "|  " name "  |")))
-;;; display stardate
-(defun stc/stardate (date)(%set-inner-text *stc-stardate* (roundnum date 4)))
+;;; bug:
+#+nil
+(defun %draggable (ip)
+  (let* ((pvp (#j:$ ip))
+        (fn (ffi:getprop pvp "draggable")))
+    (ffi:bind-call fn)))
 
 
-;;; terpri
-#+nil (defun stc/terpri ()
-    (format *so* "~%"))
+;;; console reader
+(defparameter reg-del (ffi:regexp "[\\n\\r]" "g"))
 
-;;; clear console
-#+nil (defun stc/clear ()
-    (output-stream-reset *stc-stream*))
+(defun stc/kb-handler (evt)
+  (#j:console:log "KBH" evt)
+  (#j:console:log "Read keycode" (ffi:getprop  evt "keyCode"))
+  (let ((el (ffi:getprop evt "target"))
+        (data)
+        (from-value))
+    (cond ((equal (ffi:getprop  evt "keyCode") 13)
+           (setq data (ffi:|String|  (ffi:getprop *stc-input*  "value") "replace"  reg-del ""))
+           (ffi:setprop (*stc-input* "value") "")
+           (ffi:setprop (*stc-input* "value")
+                        (ffi:|String| (ffi:getprop *stc-input*  "value") "replace"  reg-del ""))
+           (rx:emit :fsm (stc/kbd-reader data)))
+          ))
+  (values))
 
-
-#+nil (defparameter reg-del (reg-exp "[\\n\\r]" "g"))
-
-;;; reader
-#+nil (defun stc/kb-handler (evt)
-    (let ((el (oget evt "target"))
-          (data))
-        (cond ((equal (oget evt "keyCode") 13)
-               (setq data (jstring:replace (oget *stc-input*  "value") reg-del ""))
-               (setf (oget *stc-input* "value") "")
-               (setf (oget *stc-input* "value")
-                     (jstring:replace (oget *stc-input*  "value") reg-del ""))
-               (mordev:rx-emit :fsm (stc/kbd-reader data)))
-              ))
-    (values) )
-
-
-#+nil (defun stc/kbd-reader (data)
-    (let ((stream (jscl::make-string-stream data))
-          (sentinel (gensym "EOF"))
-          (s)
-          (res '()))
-        (tagbody parser-fsm
-         feeder
-           (setq s (jscl::ls-read stream nil sentinel))
-           (if (eql s sentinel) (go rdr-eof))
-           (push s res)
-           (go feeder)
-         rdr-eof)
-        (reverse res)))
+(defun stc/kbd-reader (data)
+  (#j:console:log "kbr" data)
+  (let ((stream (make-string-input-stream data))
+        (sentinel (gensym "EOF"))
+        (s)
+        (res '()))
+    (tagbody parser-fsm
+     feeder
+       (setq s (jscl::ls-read stream nil sentinel))
+       (if (eql s sentinel) (go rdr-eof))
+       (push s res)
+       (go feeder)
+     rdr-eof)
+    (reverse res)))
 
 ;;; EOF

@@ -29,7 +29,7 @@
 (defun state (lbl)
     (setq *state-fsm* lbl))
 
-(mordev:rx-listen :fsm (lambda (data) (fsm data)))
+(rx:listen :fsm (lambda (data) (fsm data)))
 
 (defun fsm (input)
   (case *state-fsm*
@@ -131,7 +131,7 @@
      (return-from fsm (values)))
     (:more-mission
      (if (eql (car input) 'aye)
-         (mordev:rx-emit :new-mission))
+         (rx:emit :new-mission nil))
      (return-from fsm (values)))
     ))
 

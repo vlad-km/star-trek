@@ -30,7 +30,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 |#
 
 (defmacro display (fmt-str &body args)
-  `(format *so* ,@args))
+  `(format *so* ,fmt-str ,@args))
 
 ;;; some kludge for two dimensional array (not implemented in JSCL)
 ;;; reader
@@ -47,17 +47,22 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq offset (+ (* row rowsize) col))
     (setf (aref array offset) value) ))
 
-;;; note: bug
-;;; numbers truncate
+;;; the function is about nothing
+;;; with this generation of pseudo-random date
+;;; you can just give the number back without checking
 (defconstant *round-base* #(10 10 100 1000 10000))
 
 (defun roundnum (num &optional (base 1))
   (let ((magic (aref *round-base* base)))
     (/ (floor (* num magic)) magic)))
 
-;;; string constructor
-;;; note: may be js pad-right ?
-;;;       it's very slow
+
+
+;;; pads this string with a given string (repeated, if needed)
+;;; so that the resulting string reaches a given length.
+;;; the padding is applied from the end of this string.
+
+#+nil
 (defun strfor (max str)
   (let ((len (length str))
         (need)
@@ -71,13 +76,17 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
           (apply #'concat str res))
         str)))
 
+(defun strfor (max str)
+  (ffi:|String| str "padEnd" max))
 
 ;;; klingon
-(das:structure klingon (x 0) (y 0) (energy 0))
+#+nil (das:structure klingon (x 0) (y 0) (energy 0))
+(defstruct (klingon (:type vector) :named) (x 0) (y 0) (energy 0))
 
 
 ;;; QUAD
-(das:structure quad (visit nil) (base 0) (star 0) (klingon 0))
+#+nil (das:structure quad (visit nil) (base 0) (star 0) (klingon 0))
+(defstruct (quad  (:type vector) :named) (visit nil) (base 0) (star 0) (klingon 0))
 
 
 ;;; quad name
@@ -94,7 +103,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; quad accessors
 (defun quad-name (z5 z4 g5)
-  (concat (quad-name1 z5 z4) (quad-name-sub g5 z5)))
+  (jscl::concat (quad-name1 z5 z4) (quad-name-sub g5 z5)))
 
 (defun quad-name1 (z5 z4)
   (cond ((< z5 4)
@@ -213,9 +222,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; game control
 
+;;; start game
 (defun launching ()
   (unless *started*
-    (st-console-init)
+    (console-init)
     (setq *started* t))
   (stc/clear)
   ;;(stc/stardate *time*)
@@ -227,6 +237,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (setq *started nil)
   (stc/hide))
 
+;;; note: unused func, see trek1
 (defun trek ()
   (unless *started*
     (st-console-init)
@@ -364,7 +375,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
       (return-from mloop (fail-mission)))
   ;; end mission
   (when *mission-end*
-    (mordev:rx-emit :trek1)
+    (rx:emit :trek1)
     (return-from mloop))
   ;; klingon attack
   (when *klingon-attack*
