@@ -2,6 +2,7 @@
 \#*
 *.js
 loader.lisp
+.#game.lisp
 t/
 bin/
 
