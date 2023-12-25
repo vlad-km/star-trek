@@ -185,6 +185,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "       '-------------------'~%" )
   )
 
+
 (defun init()
     (setq *damage-repair-magic-number* (/ (random 50) 100))
     (setq *success* nil)
