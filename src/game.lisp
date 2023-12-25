@@ -1250,7 +1250,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
       "  USED.  THEREFORE COURSE 1.5 IS             5---<*>---1~&"
       "  HALF WAY BETWEEN 1 AND 2.                     .':`.~&"
       "                                              .'  :  `.~&"
-      "                                              6    7    8~&"
+      "                                              6   7    8~&"
       "~&"
       "                                               COURSE~&"
       "  ONE 'WARP FACTOR' IS THE SIZE OF~&"
