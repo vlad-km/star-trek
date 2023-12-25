@@ -375,7 +375,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; main game loop. read command from console, handle it 
 (defun mloop()
-  ;;(#j:console:log "MLOOP" "prev state"  *state-fsm*)
+  (#j:console:log (format nil"MLOOP state ~a"  *state-fsm*))
   (stc/stardate *time*)
   ;; cool end mission
   (if (or *success* (<= *klingon-total* 0))
@@ -400,7 +400,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; main game loop. execute entered command
 (defun mloop-command (cmd)
-  (#j:console:log "MLOOP-COMMAND" "state"  *state-fsm* "CMD" cmd)
+  (#j:console:log (format nil "MLOOP-COMMAND (~a) state ~a" cmd *state-fsm*))
   (case cmd
     ((W)
      ;; warp
@@ -433,6 +433,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
      ;; computer
      (computer-message)
      (state :computer))
+    ((M)
+     ;; manual
+     (operational-manual))
     ((x)
      ;; done
      (end-of-mission))
@@ -1059,6 +1062,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; computer itself
 (defun computer (a)
+  (#j:console:log (format nil "COMP: (~a) :state ~a" a *state-fsm*))
     (case a
       ((g)
        (stc/clear)
@@ -1292,8 +1296,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
       "  IF YOU HIT THE KLINGON, HE IS DESTROYED AND CANNOT FIRE~&"
       "  BACK AT YOU.  IF YOU MISS, HE WILL SHOOT HIS PHASERS AT~&"
       "  YOU.~&"
-      "   NOTE: THE LIBRARY COMPUTER (COMMAND 7) HAS AN OPTION~&"
-      "   TO COMPUTE TORPEDO TRAJECTORY FOR YOU (OPTION 2).~&"
+      "   NOTE: THE LIBRARY COMPUTER (COMMAND C) HAS AN OPTION~&"
+      "   TO COMPUTE TORPEDO TRAJECTORY FOR YOU (OPTION N).~&"
       "~&"
       ))
 
