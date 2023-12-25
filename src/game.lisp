@@ -176,6 +176,15 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "       '-------------------'~%" )
   )
 
+(defun title ()
+  (display "THE USS ENTERPRISE --- NCC-1701~%")
+  (display "                   +------*-------,~%" )
+  (display "  ,--------------,  `---. .-------'~%" )
+  (display "  '--------+ +--+      / /~%" )
+  (display "       ,---+ +--------+ +--,~%" )
+  (display "       '-------------------'~%" )
+  )
+
 (defun init()
     (setq *damage-repair-magic-number* (/ (random 50) 100))
     (setq *success* nil)
