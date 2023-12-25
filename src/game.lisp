@@ -835,7 +835,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                   (delete-star x3 y3)
                   (return-from torpedo-fire (values)))
                  ((eql obj 'b)
-                  (display "~%*** STARBASE DESTROYED ***~%")
+                  (display "~&*** STAR BASE DESTROYED ***  .......CONGRATULATIONS~&")
                   (delete-base x3 y3)
                   (destroy-base)
                   (return-from torpedo-fire (values))))
