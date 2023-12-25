@@ -365,7 +365,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; main game loop. read command from console, handle it 
 (defun mloop()
-  (#j:console:log "MLOOP" "prev state"  *state-fsm*)
+  ;;(#j:console:log "MLOOP" "prev state"  *state-fsm*)
   (stc/stardate *time*)
   ;; cool end mission
   (if (or *success* (<= *klingon-total* 0))
@@ -582,10 +582,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (incf (aref *ddd* damdev)
                  (cond ((< (random 10) 6)
                         (display "DAMAGE CONTROL REPORT:  ~a DAMAGED~%"
-                                (device-name damdev))
+                                 (device-name damdev))
                         (* -1 (1+ (/ (random 500) 100))))
                        (t (display "DAMAGE CONTROL REPORT:  ~a STATE OF REPAIR IMPROVED~%"
-                                  (device-name damdev))
+                                   (device-name damdev))
                           (1+ (/ (random 300) 100)))))))))
 
 (defun cal-vec (va c1)
@@ -888,8 +888,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (cond ((= d3 0) nil)
                  (t (need-repair-message d3)))))))
 
-
-;;; readfn
 (defvar *d3-repair*)
 
 (defun need-repair-message (d3)
@@ -902,10 +900,16 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (setq *d3-repair* d3)
   (state :need-repair))
 
+#+nil
 (defun repair-all()
   (dotimes (i 8)
     (cond((<  (aref *ddd* (1+ i)) 0)
           (aset *ddd* (1+ i) 0)))))
+
+(defun repair-all()
+  (dotimes (i 8)
+    (cond((<  (aref *ddd* (1+ i)) 0)
+          (setf (aref *ddd* (1+ i)) 0)))))
 
 
 ;;; klingon attack
@@ -1033,7 +1037,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun comp-help ()
   (display "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:~%")
   (display "-----------------------------------------~%")
-  (display "   G   CUMULATIVE GALTIC RECORD~%")
+  (display "   G   CUMULATIVE GALATIC RECORD~%")
   (display "   S   STATUS REPORT~%")
   (display "   T   PHOTON TORPEDO DATA~%")
   (display "   B   STARBASE NAV DATA~%")
