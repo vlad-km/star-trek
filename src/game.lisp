@@ -384,6 +384,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (if (> *time* (+ *time0* *t-period*))
       (return-from mloop (fail-mission)))
   ;; end mission
+  ;; todo: rewrite this, wrong
   (when *mission-end*
     (rx:emit :trek1)
     (return-from mloop))
