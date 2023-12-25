@@ -105,6 +105,8 @@
 
 (html:declare-element label)
 (html:declare-element pre)
+(html:declare-element input)
+
 
 (defparameter +stc-bord-css+
   (css:inline '(:border-style "groove" :border-width "1px" :border-radius "3px")))
@@ -198,6 +200,7 @@
                                      :append " STARDATE : ")
                   :append *stc-stardate*))
 
+  #+nil
   (setq *stc-input*
         (html:textarea :|id| "stc-input-id"
                        :|style| (css:inline
@@ -209,6 +212,14 @@
                                    :spellcheck "false"))
                        :|rows| "1"
                        :|cols| "55"))
+
+  (setq *stc-input*
+        (html:input :|id| "stc-input-id"
+                       :|style| (css:inline
+                                 '(:color "#28c428"
+                                   :background-color "#24502a"
+                                   :display "inline-table"))))
+
   (setq *stc-talk*
         (html:label :|id| "stc-talk-id"
                     :|style.background-color| "#24502a"
