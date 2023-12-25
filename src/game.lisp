@@ -910,12 +910,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (setq *d3-repair* d3)
   (state :need-repair))
 
-#+nil
-(defun repair-all()
-  (dotimes (i 8)
-    (cond((<  (aref *ddd* (1+ i)) 0)
-          (aset *ddd* (1+ i) 0)))))
-
 (defun repair-all()
   (dotimes (i 8)
     (cond((<  (aref *ddd* (1+ i)) 0)
