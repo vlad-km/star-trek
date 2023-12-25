@@ -32,7 +32,7 @@
 (rx:listen :fsm (lambda (data) (fsm data)))
 
 (defun fsm (input)
-  (#j:console:log "FSM state" *state-fsm* "Data" input)
+  (#j:console:log (format nil "FSM state ~a  Data ~a" *state-fsm* input))
   (case *state-fsm*
     (:accept-command
      (when (eql (car input) 'n)
