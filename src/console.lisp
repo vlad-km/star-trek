@@ -88,7 +88,7 @@
   (ffi:setprop (*stc-location* "innerText") (jscl::concat "|" name "|")))
 ;;; display stardate
 (defun stc/stardate (num-date)
-  (ffi:setprop (*stc-stardate* "innerText") (string num-date)))
+  (ffi:setprop (*stc-stardate* "innerText") (string (roundnum num-date 4))))
 
 
 (defvar *stc-header* nil)
