@@ -32,6 +32,14 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defmacro display (fmt-str &body args)
   `(format *so* ,fmt-str ,@args))
 
+(defmacro @clt (label &body args)
+  `(#j:console:log
+    (format nil
+            "   ~a : state: ~a  data: ~a"
+            ,label
+            *state-fsm*
+            (mapcar (lambda (x) x) (list ,@args)))))
+
 ;;; some kludge for two dimensional array (not implemented in JSCL)
 ;;; reader
 (defun daref (array row col)
@@ -160,13 +168,16 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defvar *torpedo* 0)       ;; No. of torpedoes
 (defvar *shield* 0)        ;; shield
 (defvar *docked* nil)      ;; docked
-
-;;; global flags
+(defvar *condi* "DOCED")   ;; condition: doced/red/yellow/green
 (defvar *klingon-attack* nil)  ;; turn of Klingon
 (defvar *success* nil)         ;; success flag
 (defvar *mission-end* nil)     ;; mission terminated
 (defvar *started* nil)
+(defvar *new-course* nil)
+(defvar *new-factor* nil)
 
+
+#+nil
 (defun title ()
   (display "THE USS ENTERPRISE --- NCC-1701~%")
   (display "                  +------*-------,~%" )
@@ -375,7 +386,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; main game loop. read command from console, handle it 
 (defun mloop()
-  (#j:console:log (format nil"MLOOP state ~a"  *state-fsm*))
+  (@clt "MLOOP")
   (stc/stardate *time*)
   ;; cool end mission
   (if (or *success* (<= *klingon-total* 0))
@@ -400,8 +411,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 ;;; main game loop. execute entered command
+#+nil
 (defun mloop-command (cmd)
-  (#j:console:log (format nil "MLOOP-COMMAND (~a) state ~a" cmd *state-fsm*))
+  (@clt "MLOOP-COMMAND" cmd (consp cmd) (symbolp cmd))
   (case cmd
     ((W)
      ;; warp
@@ -445,16 +457,200 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
      (stc/clear)
      (help-com))))
 
+#+nil
+(defun mloop-command (data)
+  (let ((cmd (car data))
+        (args (rest data)))
+    (@clt "MLOOP-COMMAND" data cmd args)
+    (case cmd
+      ((W)
+       ;; warp
+       (input-course-message "LT. SULU")
+       (state :input-course-check))
+      ((S)
+       ;; short range radar
+       (stc/clear)
+       (short-range-sensor))
+      ((L)
+       ;; long range radar
+       (long-range-sensor))
+      ((P)
+       ;; phaser
+       (phaser-message)
+       (state :phaser))
+      ((T)
+       ;; torpedo
+       (torpedo-message)
+       (state :torpedo-course))
+      ((Z)
+       ;; shield
+       (shield-message)
+       (state :shield))
+      ((R)
+       ;; damage report
+       (stc/clear)
+       (damage-report))
+      ((C)
+       ;; computer
+       (cond (args (computer (car args)))
+             (t  (computer-message)
+                 (state :computer))))
+      ((M)
+       ;; manual
+       (operational-manual))
+      ((x)
+       ;; done
+       (end-of-mission))
+      (otherwise
+       ;; help
+       (stc/clear)
+       (help-com)))))
+
+#+nil
+(defun mloop-command (data)
+  (let ((cmd (car data))
+        (args (rest data)))
+    (@clt "MLOOP-COMMAND" data cmd args)
+    (case cmd
+      ((W) ;; warp
+       (input-course-message "LT. SULU")
+       (state :input-course-check))
+      ((S) ;; short range radar
+       (stc/clear)
+       (short-range-sensor))
+      ((L) ;; long range radar
+       (long-range-sensor))
+      ((P) ;; phaser
+       (phaser-message)
+       (state :phaser))
+      ((T) ;; torpedo
+       (cond (args (let ((course (input-course-check(car args))))
+                     ;; enter command t course
+                     ;; may be this code move to FSM:torpedo-fair
+                     (when course
+                       (decf *energy* 2)
+                       (decf *torpedo* 1)
+                       (torpedo-fire *new-course*)
+                       (setq *klingon-attack* t))
+                     (state :mloop-command)))                     
+             (t (torpedo-message)
+                ;; enter command t
+                (state :torpedo-course))))
+      ((Z) ;; shield
+       (shield-message)
+       (state :shield))
+      ((R) ;; damage report
+       (stc/clear)
+       (damage-report))
+      ((C) ;; computer
+       (cond (args (computer (car args)))
+             (t  (computer-message)
+                 (state :computer))))
+      ((M) ;; manual
+       (operational-manual))
+      ((x) ;; done
+       (end-of-mission))
+      (otherwise
+       ;; help
+       (stc/clear)
+       (help-com)))))
+
+
+(defun mloop-command (data)
+  (let ((cmd (car data))
+        (args (rest data)))
+    (@clt "MLOOP-COMMAND" data cmd args)
+    (case cmd
+      ((W) ;; warp => w direction factor
+       (let ((part (length args)))
+         (@clt "W-MLOOP" part)
+         (cond ((= part 0)
+                ;; only command prefix
+                (input-course-message "LT. SULU")
+                (state :input-course-check))
+               ((= part 1)
+                ;; partial warp command direction
+                (setq *с1* (input-course-check (car args)))
+                (when *c1*
+                  (@clt "W-LOOP-part-1" *c1* *new-course*)
+                  (nav-factor-message (if (< (aref *ddd* 1) 0) 0.2 8))
+                  (state :nav-factor))
+                (return-from mloop-command (values)))
+               ((= part 2)
+                ;; full warp command direction factor
+                (let ((w-direction (first args))
+                      (w-factor (second args)))
+                  (setq *c1* (input-course-check w-direction))
+                  (@clt " W partial " part *c1* *new-course*)
+                  (cond  (*c1*
+                          (setq *w1* (nav-factor w-factor))
+                          (when *w1*
+                            (display "Wfull nav-factor: ~a~%" *w1*)
+                            (setq *n* (nav-energy *w1*))
+                            (unless *n* (return-from mloop-command (values)))
+                            (klingon-attack-warp)
+                            (repair-by-warp *w1*)
+                            (damage-by-warp)
+                            (when (not (nav4 *new-course* *n* *w1*))
+                              (return-from mloop-command (values)))
+                            (warp-time *w1*))
+                          (return-from mloop-command (values)))
+                         (t
+                          ;; wtf?
+                          (input-course-message "LT. SULU")
+                          (state :input-course-check)
+                          )))))))
+      ((S) ;; short range radar
+       (stc/clear)
+       (short-range-sensor))
+      ((L) ;; long range radar
+       (long-range-sensor))
+      ((P) ;; phaser
+       (phaser-message)
+       (state :phaser))
+      ((T) ;; torpedo
+       (cond (args (let ((course (input-course-check(car args))))
+                     ;; enter command t course
+                     ;; may be this code move to FSM:torpedo-fair
+                     (when course
+                       (decf *energy* 2)
+                       (decf *torpedo* 1)
+                       (torpedo-fire *new-course*)
+                       (setq *klingon-attack* t))
+                     (state :mloop-command)))                     
+             (t (torpedo-message)
+                ;; enter command t
+                (state :torpedo-course))))
+      ((Z) ;; shield
+       (shield-message)
+       (state :shield))
+      ((R) ;; damage report
+       (stc/clear)
+       (damage-report))
+      ((C) ;; computer
+       (cond (args (computer (car args)))
+             (t  (computer-message)
+                 (state :computer))))
+      ((M) ;; manual
+       (operational-manual))
+      ((x) ;; done
+       (end-of-mission))
+      (otherwise
+       ;; help
+       (stc/clear)
+       (help-com)))))
+
+
+
 ;;; how many time in warp
 (defun warp-time (w1)
   (let ((t8 1))
     (if (< w1 1)
         (setq t8 (/ (floor (* 10 w1)) 10)))
     (incf *time* t8)
-    (cond
-      ((> *time* (+ *time0* *t-period*))
-       (fail-mission))
-      (t t))))
+    (cond ((> *time* (+ *time0* *t-period*))
+           (fail-mission))
+          (t t))))
 
 
 ;;; input warp/torpedo course
@@ -463,11 +659,13 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; input message
 (defun input-course-message (man)
+  (@clt "   input-course-message " *last-name* man)
   (setq *last-name* man)
   (display "COURSE (0-8, -1)"))
 
 ;;; input state
 (defun input-course-check (c1)
+  (@clt "   input-course-check " c1)
   (cond ((not (numberp c1)) nil)
         ((= c1 -1) nil)
         (t  (cond ((or (< c1 0) (> c1 8))
@@ -482,10 +680,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; warp message
 (defun nav-factor-message (x)
+  (@clt "   nav-factor-message " x)
   (display "WARP FACTOR (0-~a)" x))
 
 ;;; warp state1
 (defun nav-factor (w1)
+  (@clt "   nav-factor" w1)
   (let ((wdamage (aref *ddd* 1)))
     (cond ((= w1 0)
            nil)
@@ -501,6 +701,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; warp state2
 (defun nav-energy (w1)
+  (@clt "   nav-energy" w1)
   (let ((n (floor (+ (* w1 8) 0.5))))
     (cond ((< *energy* n)
            (stc/terpri)
@@ -513,7 +714,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                     (display "                         PRESENTLY DEPLOYED TO SHIELDS~%")))
            t)
           (t n))))
-
 
 ;;; entering quad
 (defun enter-quad ()
@@ -537,6 +737,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; display alarm: damaged
 (defun repo-entering-quad-stat ()
+  (@clt "   repo-entering-quad-stat")
   (when (/= *c-klingons* 0)
     (display "COMBAT AREA CONDITION RED ~%"))
   (when (<= *shield* 200)
@@ -563,13 +764,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "CROSS-CIRCUITING TO ENGINE ROOM!!~%")
   nil )
 
-
 (defun klingon-attack-warp()
   (dotimes (i 4)
     (cond ((/= 0 (klingon-energy (aref *kkk* i)))
            (klingon-rand-move i))))
   (klingon-attack))
-
 
 (defun repair-by-warp (w1)
   (let ((flag nil)
@@ -610,8 +809,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
        (* (- (aref va (+ ci 1)) (aref va ci))
           cr))))
 
-
 (defun nav4 (c1 n w1)
+  (@clt "    repo-entering-quad-stat" c1 n w1)
   (let ((x *ex*)
         (y *ey*)
         (dx (cal-vec *cx* c1))
@@ -648,8 +847,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (short-range-sensor)
     t))
 
-
-
 ;;; exit from quad
 (defun exit-quad (n x y x1 y1 w1 old-qx old-qy)
   (let ((flag nil))
@@ -681,7 +878,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                       (dec-energy n)
                       t))))))
 
-
 ;;; dec energy
 (defun dec-energy (n)
   (when (< (decf *energy* (+ n 10)) 0)
@@ -694,6 +890,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; calculate Long sensor, display report
 (defun long-range-sensor()
+  (@clt "    long-range-sensor")
   (let ((x) (y) (qqq))
     (cond ((< (aref *ddd* 3) 0)
            (display "~%LONG RANGE SENSORS ARE INOPERABLE.~%"))
@@ -759,7 +956,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                              (delete-klingon i))
                             (t (display "SENSORS SHOW ~d UNITS REMAINING~%" ke))))))))))
 
-
 ;;; drop star
 (defun delete-star (x y)
   (sdref *sec* x y nil)
@@ -797,10 +993,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (sdref *sec* x y nil)
   (decf (quad-base (daref *ggg* *qx* *qy*))))
 
-
-
 ;;; torpedo
 (defun torpedo-message ()
+  (@clt "    torpedo-message")
   (cond ((<= *torpedo* 0)
          (display "~%ALL PHOTON TORPEDOES EXPENDED.~%"))
         ((< (aref *ddd* 5) 0)
@@ -808,10 +1003,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         (t (display "PHOTON TORPEDO ")))
   (input-course-message "ENSIGN CHEKOV"))
 
-
-
 ;;; torpedo fire state
 (defun torpedo-fire (course)
+  (@clt "    torpedo-fire" course)
   (let ((repeat t)
         (x *ex*)
         (y *ey*)
@@ -820,31 +1014,30 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq y1 (cal-vec *cy* course))
     (display "TORPEDO TRACK: ")
     (jscl::while repeat
-           (incf x x1)
-           (incf y y1)
-           (setq x3 (floor (+ x 0.5)))
-           (setq y3 (floor (+ y 0.5)))
-           (setq obj (daref *sec* x3 y3))
-           (cond ((or (< x3 0) (> x3 7) (< y3 0)(> y3 7))
-                  (display "~%TORPEDO MISSED.~%")
-                  (return-from torpedo-fire (values)))
-                 ((eql obj 'k)
-                  (display "~%")
-                  (delete-klingon-xy x3 y3)
-                  (when (<= *klingon-total* 0)
-                    (setq *success* t))
-                  (return-from torpedo-fire (values)))
-                 ((eql obj 's)
-                  (display "~%STAR AT ~a, ~a ABSORBED TORPEDO ENERGY.~%" x3 y3)
-                  (delete-star x3 y3)
-                  (return-from torpedo-fire (values)))
-                 ((eql obj 'b)
-                  (display "~&*** STAR BASE DESTROYED ***  .......CONGRATULATIONS~&")
-                  (delete-base x3 y3)
-                  (destroy-base)
-                  (return-from torpedo-fire (values))))
-           (display "(~a,~a)" x3 y3))))
-
+                 (incf x x1)
+                 (incf y y1)
+                 (setq x3 (floor (+ x 0.5)))
+                 (setq y3 (floor (+ y 0.5)))
+                 (setq obj (daref *sec* x3 y3))
+                 (cond ((or (< x3 0) (> x3 7) (< y3 0)(> y3 7))
+                        (display "~%TORPEDO MISSED.~%")
+                        (return-from torpedo-fire (values)))
+                       ((eql obj 'k)
+                        (display "~%")
+                        (delete-klingon-xy x3 y3)
+                        (when (<= *klingon-total* 0)
+                          (setq *success* t))
+                        (return-from torpedo-fire (values)))
+                       ((eql obj 's)
+                        (display "~%STAR AT ~a, ~a ABSORBED TORPEDO ENERGY.~%" x3 y3)
+                        (delete-star x3 y3)
+                        (return-from torpedo-fire (values)))
+                       ((eql obj 'b)
+                        (display "~&*** STAR BASE DESTROYED ***  .......CONGRATULATIONS~&")
+                        (delete-base x3 y3)
+                        (destroy-base)
+                        (return-from torpedo-fire (values))))
+                 (display "(~a,~a)" x3 y3))))
 
 (defun destroy-base ()
   (cond ((or (> *base-total* 0) (> *klingon-total* (- *time* *time0* *t-period*)))
@@ -858,15 +1051,17 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; shield message
 (defun shield-message ()
+  (@clt "    shield-message")
   (if (< (aref *ddd* 7) 0)
       (progn
         (display "~%SHIELD CONTROL INOPERABLE.~%")
         (state :mloop-command))
       (display "~%ENERGY AVAILABLE =~a.  NUMBER OF UNITS TO SHIELDS ?"
-              (+ *energy* *shield*))))
+               (+ *energy* *shield*))))
 
 ;;; shield state
 (defun shield (x)
+  (@clt "    shield" x)
   (cond ((or (< x 0) (= x *shield*))
          (display "SHIELDS UNCHANGED~%"))
         ((> x (+ *energy* *shield*))
@@ -876,7 +1071,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            (setq *shield* x)
            (display "DEFLECTOR CONTROL ROOM:~%")
            (display "SHIELDS NOW AT ~a UNITS PER YOUR COMMAND~%" *shield*))))
-
 
 ;;; damage report
 (defun damage-report()
@@ -981,6 +1175,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 ;;; DOCKED
 ;;; todo: update statuc location on console
 (defun dockedp()
+  (@clt "    docedp" *condi*)
   (let ((x) (y))
     (dotimes (i 3)
       (dotimes (j 3)
@@ -998,6 +1193,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     nil))
 
 (defun set-condition ()
+  (@clt "    set-condition " *condi*)
   (cond ((not (dockedp))
          (cond ((> *c-klingons* 0) (setq *condi* "*RED*"))
                ((< *energy* (/ *full-energy* 10)) (setq *condi* "YELLOW"))
@@ -1006,6 +1202,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; short range sensor
 (defun short-range-sensor ()
+  (@clt "   short-range-sensor ")
   (let ((fff))
     (set-condition)
     (when (< (aref *ddd* 2) 0)
@@ -1062,8 +1259,33 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 ;;; computer itself
+(defmacro %def-pgm (index &body body)
+  `(cons ,index (lambda (&rest data) ,@body)))
+
+(defvar *pgm-abend* (lambda (&optional x) (error "ABEND")))
+
+(defun %exec-pgm (pgm index &optional (unknow-index *pgm-abend*))
+  (let (f)
+    (setq fn (assoc index pgm :test 'eq))
+    (if fn (cdr fn) unknow-index)))
+
+(defvar *comp-pgm
+  (list
+   (%def-pgm 'g  (stc/clear)(comp-galaxy-rec)(state :mloop-command))
+   (%def-pgm 's  (stc/clear)(comp-stat-repo)(state :mloop-command))
+   (%def-pgm 't  (comp-torpedo)(state :mloop-command))
+   (%def-pgm 'b  (base-nav)(state :mloop-command))
+   (%def-pgm 'n  (comp-calc-message)(state :comp-calc))
+   (%def-pgm 'z  (stc/clear)(comp-galaxy-name-map)(state :mloop-command))))
+
 (defun computer (a)
-  (#j:console:log (format nil "COMP: (~a) :state ~a" a *state-fsm*))
+  (@clt "COMP" a)
+  (#j:console:log (format nil "Comp receive args ~a" a))
+  (funcall (%exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help)))))
+
+#+nil
+(defun computer (a)
+  (@clt "COMP")
     (case a
       ((g)
        (stc/clear)
@@ -1238,10 +1460,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 ;;; manual section
-
+;;; console screen dimension: 26x70
 (defparameter +manual+
   `(
-    (w
+    (W
      (
       "COMMAND W = WARP  ENGINE CONTROL~&"
       "  'COURSE IS IN A CIRCULAR NUMERICAL         4    3    2~&"
