@@ -1345,7 +1345,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "   T   PHOTON TORPEDO DATA~%")
   (display "   B   STARBASE NAV DATA~%")
   (display "   N   DIRECTION/DISTANCE CALCULATOR~%")
-  (display "   Z   GALAXY 'REGION NAME' MAP~%"))
+  (display "   Z   GALAXY 'REGION NAME' MAP~%")
+  (display "   O   OPERATIONAL WRAP/TORPEDO MANUAL~&"))
 
 
 ;;; computer state report display
@@ -1362,7 +1363,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
    (%def-pgm 't  (comp-torpedo)(state :mloop-command))
    (%def-pgm 'b  (base-nav)(state :mloop-command))
    (%def-pgm 'n  (comp-calc-message)(state :comp-calc))
-   (%def-pgm 'z  (stc/clear)(comp-galaxy-name-map)(state :mloop-command))))
+   (%def-pgm 'z  (stc/clear)(comp-galaxy-name-map)(state :mloop-command))
+   (%def-pgm 'o  (stc/clear)(comp-direction-help)(state :mloop-command))))
 
 (defun computer (a)
   (@clt "COMP" a)
