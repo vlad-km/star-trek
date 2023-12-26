@@ -52,6 +52,23 @@ ___
   </a>
 </p>
 
+```
+        DIRECTION IS IN A CIRCULAR NUMERICAL       7    0    1
+        VECTOR ARRANGEMENT AS SHOWN.                `.  :  .' 
+        INTERGER AND REAL VALUES MAY BE               `.:.'   
+        USED.  THEREFORE COURSE 1.5 IS             6---<*>---2
+        HALF WAY BETWEEN 1 AND 2.                     .':`.   
+                                                    .'  :  ` .
+                                                    5   4    3
+      
+                                                     COURSE
+      
+        ONE 'WARP FACTOR' IS THE SIZE OF ONE QUADRANT. THEREFORE
+        TO GET FROM QUADRANT 5,6 TO 5,5 YOU WOULD USE COURSE 3
+        WARP FACTOR 1. COORDINATES ARE SPECIFIED USING X Y NOTATION
+        WITH X 1-8 FROM LEFT-RIGHT AND Y 1-8 FROM TOP-BOTTOM.
+```
+
 ### Legend
 - E __`Enterprise`__ _`is at (5,0)`_
 - K __`Klingon`__ _`is at (6,7)`_
