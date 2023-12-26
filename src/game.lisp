@@ -1543,26 +1543,46 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     _new))
 
 
+(defun comp-direction-help ()
+  (display "               WARP / TORPEDO~&")
+  (display "          =======================~&~&")
+  (display "  DIRECTION IS IN A CIRCULAR NUMERICAL       7    0    1~&")
+  (display "  VECTOR ARRANGEMENT AS SHOWN.                `.  :  .' ~&")
+  (display "  INTERGER AND REAL VALUES MAY BE               `.:.'   ~&")
+  (display "  USED.  THEREFORE COURSE 1.5 IS             6---<*>---2~&")
+  (display "  HALF WAY BETWEEN 1 AND 2.                     .':`.   ~&")
+  (display "                                              .'  :  `. ~&")
+  (display "                                             5    4    3~&")
+  (display "~&")
+  (display "                                               COURSE~&")
+  (display "~&")
+  (display "  ONE 'WARP FACTOR' IS THE SIZE OF ONE QUADRANT. THEREFORE~&")
+  (display "  TO GET FROM QUADRANT 5,6 TO 5,5 YOU WOULD USE COURSE 3~&")
+  (display "  WARP FACTOR 1. COORDINATES ARE SPECIFIED USING X Y NOTATION~&")
+  (display "  WITH X 1-8 FROM LEFT-RIGHT AND Y 1-8 FROM TOP-BOTTOM.~&")
+  )
+
+#|
 ;;; manual section
 ;;; console screen dimension: 26x70
 (defparameter +manual+
   `(
-    (W
+    (D
      (
-      "COMMAND W = WARP  ENGINE CONTROL~&"
-      "  'COURSE IS IN A CIRCULAR NUMERICAL         4    3    2~&"
-      "  VECTOR ARRANGEMENT AS SHOWN.                `.  :  .'~&"
-      "  INTERGER AND REAL VALUES MAY BE               `.:.'~&"
-      "  USED.  THEREFORE COURSE 1.5 IS             5---<*>---1~&"
-      "  HALF WAY BETWEEN 1 AND 2.                     .':`.~&"
-      "                                              .'  :  `.~&"
-      "                                              6   7    8~&"
+      "COMMAND's W OR T WARP-ENGINE-CONTROL/TORPEDO ~&~&"
+      "  DIRECTION IS IN A CIRCULAR NUMERICAL       7    0    1~&"
+      "  VECTOR ARRANGEMENT AS SHOWN.                `.  :  .' ~&"
+      "  INTERGER AND REAL VALUES MAY BE               `.:.'   ~&"
+      "  USED.  THEREFORE COURSE 1.5 IS             6---<*>---2~&"
+      "  HALF WAY BETWEEN 1 AND 2.                     .':`.   ~&"
+      "                                              .'  :  ` .~&"
+      "                                              5   4    3~&"
       "~&"
       "                                               COURSE~&"
-      "  ONE 'WARP FACTOR' IS THE SIZE OF~&"
-      "  ONE QUADRANT.  THEREFORE TO GET FROM~&"
-      "  QUADRANT 5,6 TO 5,5 YOU WOULD USE COURSE 3, WARP~&"
-      "  FACTOR 1. COORDINATES ARE SPECIFIED USING X,Y NOTATION~&"
+      "~&"
+      "  ONE 'WARP FACTOR' IS THE SIZE OF ONE QUADRANT. THEREFORE~&"
+      "  TO GET FROM QUADRANT 5,6 TO 5,5 YOU WOULD USE COURSE 3~&"
+      "  WARP FACTOR 1. COORDINATES ARE SPECIFIED USING X Y NOTATION~&"
       "  WITH X 1-8 FROM LEFT-RIGHT AND Y 1-8 FROM TOP-BOTTOM.~&"
       ))
 
@@ -1642,6 +1662,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
       ))
 
     ))
+|#
 
 
 
