@@ -644,7 +644,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
        (cond (args (computer (car args)))
              (t  (computer-message)
                  (state :computer))))
-      ((M) ;; manual
+      #+nil ((M) ;; manual
        (operational-manual))
       ((x) ;; done
        (end-of-mission))
@@ -701,8 +701,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
    ;; torpedo
    (%def-pgm 't
              (cond (args (let ((course (input-course-check (car args))))
-                           ;; enter command t course
-                           ;; may be this code move to FSM:torpedo-fair
+                           ;; enter command: t course
                            (when course
                              (decf *energy* 2)
                              (decf *torpedo* 1)
@@ -710,7 +709,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                              (setq *klingon-attack* t))
                            (state :mloop-command)))                     
                    (t (torpedo-message)
-                      ;; enter command t
+                      ;; enter command: t
                       (state :torpedo-course))))
    ;; shield
    (%def-pgm 'z  (shield-message)(state :shield))
