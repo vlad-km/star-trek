@@ -40,6 +40,19 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
             *state-fsm*
             (mapcar (lambda (x) x) (list ,@args)))))
 
+;;;
+
+(defmacro %def-pgm (index &body body)
+  `(cons ,index (lambda (&rest data) ,@body)))
+
+(defvar *pgm-abend* (lambda (&optional x) (error "ABEND")))
+
+(defun %exec-pgm (pgm index &optional (unknow-index *pgm-abend*))
+  (let (f)
+    (setq fn (assoc index pgm :test 'eq))
+    (if fn (cdr fn) unknow-index)))
+
+
 ;;; some kludge for two dimensional array (not implemented in JSCL)
 ;;; reader
 (defun daref (array row col)
@@ -568,7 +581,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                 ;; only command prefix
                 (input-course-message "LT. SULU")
                 (state :input-course-check))
-               ((= part 1)
+               #+nil ((= part 1)
                 ;; partial warp command direction
                 (setq *с1* (input-course-check (car args)))
                 (when *c1*
@@ -641,6 +654,90 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
        (help-com)))))
 
 
+#|
+
+;;; MLOOP begin
+
+;;; warp command wrapper
+
+(defun w-single-cmd ()
+  ;; entire only command prefix
+  (input-course-message "LT. SULU")
+  (state :input-course-check))
+
+(defun w-full-cmd (direction factor)
+  ;; entire full 'W': direction factor
+  (setq *c1* (input-course-check direction))
+  ;;(@clt " W partial " part *c1* *new-course*)
+  (cond  (*c1*
+          (setq *w1* (nav-factor factor))
+          (when *w1*
+            (setq *n* (nav-energy *w1*))
+            (unless *n* (return-from w-full-cmd (values)))
+            (klingon-attack-warp)
+            (repair-by-warp *w1*)
+            (damage-by-warp)
+            (when (not (nav4 *new-course* *n* *w1*))
+              (return-from w-full-cmd (values)))
+            (warp-time *w1*)))
+         (t (return-from w-full-cmd (values)))))
+
+(defun warp-handler (data)
+  (let ((part (length data)))
+    (cond ((= part 0) (w-single-cmd))
+          ((= part 2) (w-full-cmd (first data) (second data)))
+          (t (w-single-cmd)))))
+
+(defvar *loop-pgm
+  (list
+   ;; warp 
+   (%def-pgm 'w  (warp-handler data))
+   ;; short sensor
+   (%def-pgm 's  (stc/clear)(short-range-sensor))
+   ;; long sensor
+   (%def-pgm 'l  (long-range-sensor))
+   ;; phaser
+   (%def-pgm 'p  (phaser-message)(state :phaser))
+   ;; torpedo
+   (%def-pgm 't
+             (cond (args (let ((course (input-course-check (car args))))
+                           ;; enter command t course
+                           ;; may be this code move to FSM:torpedo-fair
+                           (when course
+                             (decf *energy* 2)
+                             (decf *torpedo* 1)
+                             (torpedo-fire *new-course*)
+                             (setq *klingon-attack* t))
+                           (state :mloop-command)))                     
+                   (t (torpedo-message)
+                      ;; enter command t
+                      (state :torpedo-course))))
+   ;; shield
+   (%def-pgm 'z  (shield-message)(state :shield))
+   ;; repair
+   (%def-pgm 'r (stc/clear)(damage-report))
+   ;; computer
+   (%def-pgm 'c (cond (args (computer (car args)))
+                      (t  (computer-message)
+                          (state :computer))))
+   ;; end ofmission
+   (%def-pgm 'x  (end-of-mission))
+   ))
+
+
+(defun mloop-command (data)
+  (@clt "MLOOP-receive" data)
+  (funcall (%exec-pgm *loop-pgm
+                      (first data)
+                      (lambda () (stc/clear)(comp-help)))
+           (car data)
+           (rest data)))
+
+
+;;;; end
+
+|#
+
 
 ;;; how many time in warp
 (defun warp-time (w1)
@@ -680,7 +777,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; warp message
 (defun nav-factor-message (x)
-  (@clt "   nav-factor-message " x)
+  ;;(@clt "   nav-factor-message " x)
   (display "WARP FACTOR (0-~a)" x))
 
 ;;; warp state1
@@ -1128,7 +1225,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                  (decf *shield* h)
                  (setf (klingon-energy k)(/ ke  (+ 3 (/ (random 10) 10))))
                  (display "~a UNIT HIT ON ENTERPRISE FROM SECTOR ~a,~a ~%"
-                         h (klingon-x k)(klingon-y k))
+                          h (klingon-x k)(klingon-y k))
                  (cond ((<= *shield* 0)
                         (enterprise-destroyed)
                         (return-from klingon-attack))
@@ -1138,7 +1235,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                               (setq r1 (rnd1-8))
                               (decf (aref *ddd* r1) (+ (/ h *shield*) (/ (random 50) 100)))
                               (display "DAMAGE CONTROL: ~a DAMAGED BY THE HIT~%"
-                                      (device-name r1))))))))))))
+                                       (device-name r1))))))))))))
 
 ;;; Fail 1 energy==0 or timeout
 (defun fail-mission()
@@ -1257,18 +1354,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         (display "~%COMPUTER DISABLED.~%")
         (display "~%COMPUTER ACTIVE AND AWAITING COMMAND~%")))
 
-
 ;;; computer itself
-(defmacro %def-pgm (index &body body)
-  `(cons ,index (lambda (&rest data) ,@body)))
-
-(defvar *pgm-abend* (lambda (&optional x) (error "ABEND")))
-
-(defun %exec-pgm (pgm index &optional (unknow-index *pgm-abend*))
-  (let (f)
-    (setq fn (assoc index pgm :test 'eq))
-    (if fn (cdr fn) unknow-index)))
-
 (defvar *comp-pgm
   (list
    (%def-pgm 'g  (stc/clear)(comp-galaxy-rec)(state :mloop-command))
@@ -1340,7 +1426,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
               (t (display " ***  ")))))
     (stc/terpri) ))
 
-
 ;;; status report display
 (defun comp-stat-repo()
   (display "   STATUS REPORT:~%   -------------~%")
@@ -1353,7 +1438,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         (t (display "YOUR STUPIDITY HAS LEFT YOU ON YOUR OWN IN~%")
            (display "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!~%~%")))
   (damage-report))
-
 
 ;;; torpedo attack display
 (defun comp-torpedo()
