@@ -88,6 +88,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun strfor (max str)
   (ffi:|String| str "padEnd" max))
 
+(defun pad-start (max str)
+  (ffi:|String| str "padStart" max))
+
 ;;; klingon
 (defstruct (klingon (:type vector) :named) (x 0) (y 0) (energy 0))
 
@@ -1328,7 +1331,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 (defun computer (a)
   (@clt "COMP" a)
-  (funcall (@exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help)))))
+  (funcall (@exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help))) nil))
 
 #+nil
 (defun computer (a)
@@ -1367,7 +1370,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (dotimes (i 8)
     (display "~%")
     (dotimes (j 2)
-      (display " ~a" (quad-name (* j 4) i 1)))))
+      (display " ~a" (pad-start 20 (quad-name (* j 4) i 1)))))
+  (display "~&"))
+
 
 ;;; galaxy quadrant display
 (defun comp-galaxy-rec()
