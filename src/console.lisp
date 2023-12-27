@@ -315,6 +315,7 @@
           ))
   (values))
 
+#+nil
 (defun stc/kbd-reader (data)
   ;;(#j:console:log "kbr" data)
   (let ((stream (make-string-input-stream data))
@@ -329,5 +330,21 @@
        (go feeder)
      rdr-eof)
     (reverse res)))
+
+
+(defun stc/kbd-reader (data)
+  ;;(#j:console:log "kbr" data)
+  (let ((stream (make-string-input-stream data))
+        (sentinel (gensym "EOF"))
+        (s)
+        (res '()))
+    (tagbody parser-fsm
+     feeder
+       (setq s (jscl::ls-read stream nil sentinel))
+       (if (eql s sentinel) (go rdr-eof))
+       (push s res)
+       (go feeder)
+     rdr-eof)
+    (fill-kbr (reverse res))))
 
 ;;; EOF
