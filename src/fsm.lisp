@@ -16,26 +16,10 @@
               \)
 |#
 
-
-(defvar *state-fsm* nil)
-(defvar *c1*)
-(defvar *w1*)
-(defvar *n*)
-(defvar *x0*)
-(defvar *y0*)
-(defvar *x1*)
-(defvar *y1*)
-
-(defun state (lbl)
-  (#j:console:log (format nil "STATE ~a ==> ~a" *state-fsm* lbl))
-    (setq *state-fsm* lbl))
-
-(rx:listen :fsm (lambda (data) (fsm data)))
-
 ;;; (fsm input) type-of input -> list
 ;;; perform the command received from the keyboard
 ;;; the command context is set in the *state-fsm*
-;;; 
+
 #|
 (defun fsm (input)
   (@clt "FSM" input)
@@ -158,25 +142,44 @@
     ))
 |#
 
-;;; macro for deref ((data)) -> (data)
-;;;(defmacro @fsm-data () `(setq data (car data)))
+;;; Keyboard input
+;;;
+;;; The following samples are expected
+;;;
+;;; (symbol) - control command without parameters, in this case the question-answer script is executed
+;;;            ex: (w) | (t) | (s) | (l) | (c)etc. etc.
+;;;         - the answer to the question asked earlier in the script, something like: o | y | 1.333
+;;;
+;;; (integer|float) - the answer to a question asked, the missing parameter of a previously entered command,
+;;;                   or any current scenario parameter
+;;;                   ex: (1) | (y) | (.333)
+;;;
+;;; (symbol symbol) - on-board computer control command/subcommand
+;;;                   ex: (c g) | (cn) | (c t) | (c o) etc. etc.
+;;;
+;;; (symbol integer integer|float) - starship engine control command.
+;;;                               ex: (w 1 1) | (w 0.91 0.777)
+;;;
+;;; (symbol integer|float) - command to control torpedoes or phaser
+;;;                          ex: (t 1) | (p 10)
+;;;
+
+
+;;; The FSM receives the command or command parameters from the reader.
+;;;     depending on the context, performs actions with this command
 
 (defvar *fsm-pgm
   (list
 
    (@def-pgm :accept-command
-       (@clt "FSM" data)
-     ;;(#j:console:log "DATA" data)
-     ;;(@fsm-data)
-     (cond ((eql (car data) 'n)
+       (@clt "FSM" data (kbr-a1 data) (kbr-a2 data) (kbr-a3 data))
+     (cond ((eql (kbr-a1 data) 'n)
             (end-of-game))
            (t (enter-quad)
               (mloop))))
 
    (@def-pgm :mloop-command
-       (@clt "FSM" data)
-     ;;(#j:console:log "data" data)
-     (@fsm-data)
+       (@clt "FSM" data (kbr-a1 data) (kbr-a2 data) (kbr-a3 data))
      (mloop-command data)
      (values))
    
@@ -186,9 +189,8 @@
      (values))
 
    (@def-pgm :input-course-check
-       (@fsm-data)
      (@clt "FSM" data)
-     (setq *c1* (input-course-check (car data)))
+     (setq *c1* (input-course-check (aref data 1)))
      (when *c1*
        (display ": ~a " *new-course*)
        (nav-factor-message (if (< (aref *ddd* 1) 0) 0.2 8))
@@ -196,10 +198,9 @@
      (values))
 
    (@def-pgm :nav-factor
-       (@fsm-data)
      (@clt "FSM" data)
      (state :mloop-command)
-     (setq *w1* (nav-factor (car data)))
+     (setq *w1* (nav-factor (aref data 1)))
      (when *w1*
        (display ": ~a~%" *w1*)
        (setq *n* (nav-energy *w1*))
@@ -212,9 +213,8 @@
      (values))
 
    (@def-pgm :torpedo-course
-       (@fsm-data)
      (@clt "FSM" data)
-     (setq *c1* (input-course-check (car data)))
+     (setq *c1* (input-course-check (aref data 1)))
      (when *c1*
        (display ": ~a~%" *new-course*)
        (decf *energy* 2)
@@ -225,39 +225,34 @@
      (values))
 
    (@def-pgm :phaser
-       (@fsm-data)
      (@clt "FSM" data)
-     (display ": ~a~%" data)
-     (phaser4 (car data))
+     (display ": ~a~%" (aref data 1))
+     (phaser4 (aref data 1))
      (state :mloop-command)
      (values))
 
    (@def-pgm :shield
-       (@fsm-data)
      (@clt "FSM" data)
-     (display ": ~a~%" data)
-     (shield (car data))
+     (display ": ~a~%" (aref data 1))
+     (shield (aref data 1))
      (state :mloop-command)
      (values))
 
    (@def-pgm :computer
-       (@fsm-data)
      (@clt "FSM" data)
-     (computer (car data))
+     (computer (aref data 1))
      (values))
 
    (@def-pgm :comp-calc
-       (@fsm-data)
      (@clt "FSM" data)
-     (display ": ~a~%" data)
-     (setq *x0* (car data))
-     (setq *y0* (cadr data))
+     (display ": ~a~%" (aref data 1))
+     (setq *x0* (aref data 1))
+     (setq *y0* (aref data 2))
      (display "FINAL COORDINATES X Y?")
      (state :comp-calc-final-co)
      (values))
 
    (@def-pgm :comp-calc-y
-       (@fsm-data)
      (setq *y0* data)
      ;; note: wtf?
      ;; note: the state never use
@@ -266,7 +261,6 @@
      (values))
 
    (@def-pgm :comp-calc-final-x
-       (@fsm-data)
      (setq *x1* data)
      ;; note: wtf?
      ;; note: the state never use
@@ -275,20 +269,18 @@
      (values))
 
    (@def-pgm :comp-calc-final-co
-       (@fsm-data)
-     (display ": ~a~%" data)
+     (display ": ~a~%" (list (aref data 1) (aref data 2)))
      (@clt "FSM" data)
-     (setq *x1* (car data))
-     (setq *y1* (cadr data))
+     (setq *x1* (aref data 1))
+     (setq *y1* (aref data 2))
      (disp-direct-dist *x0* *y0* *x1* *y1*)
      (state :mloop-command)
      (values))
 
    (@def-pgm :need-repair
        (@clt "FSM" data)
-     (@fsm-data)
-     (display "~a~%" data)
-     (cond ((eql 'y (car data))
+     (display "~a~%" (aref data 1))
+     (cond ((eql 'y (aref data 1))
             (repair-all)
             (incf *time* (+ *d3-repair* 0.1))
             (show-stat-repair)))
@@ -296,23 +288,23 @@
      (values))
 
    (@def-pgm :more-mission
-       (@fsm-data)
      (@clt "FSM" data)
-     (if (eql (car data) 'bye)
+     (if (eql (aref data 1) 'bye)
          (rx:emit :new-mission nil))
      (values))
    ))
 
+;;; The FSM receives the command or command parameters from the reader
+;;;     depending on the context, performs actions with this command
 (defun fsm (data)
-  ;;(@fsm-data)
-  (@clt "FSM receive:" data)
-  ;;(#j:console:log "DATA" data)
+  (@clt "FSM receive:" data (aref data 1) (aref data 2) (aref data 3))
   (funcall (@exec-pgm *fsm-pgm
                       *state-fsm*
                       (lambda (&optional x) (error "FSM ABEND ~a ~a~&" *state-fsm* data)))
            data))
 
-
+;;; subscribe FSM
+(rx:listen :fsm (lambda (data) (fsm data)))
 
 
 ;;; EOF
