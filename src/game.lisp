@@ -35,10 +35,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defmacro @clt (label &body args)
   `(#j:console:log
     (format nil
-            "   ~a : state: ~a  data: ~a"
+            "   ~a: state: ~a  data: ~a"
             ,label
             *state-fsm*
-            (mapcar (lambda (x) x) (list ,@args)))))
+            (mapcar (lambda (x) (list x (type-of x))) (list ,@args)))))
 
 ;;;
 
@@ -49,8 +49,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 (defun @exec-pgm (pgm index &optional (unknow-index *pgm-abend*))
   (let (f)
-    (setq fn (assoc index pgm :test 'eq))
+    (setq fn (assoc index pgm :test 'equal))
     (if fn (cdr fn) unknow-index)))
+
+;;; macro for deref ((data)) -> (data)
+(defmacro @fsm-data () `(setq data (car data)))
 
 
 ;;; some kludge for two dimensional array (not implemented in JSCL)
@@ -189,24 +192,13 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defvar *new-course* nil)
 (defvar *new-factor* nil)
 
-
-#+nil
 (defun title ()
-  (display "THE USS ENTERPRISE --- NCC-1701~%")
-  (display "                  +------*-------,~%" )
-  (display "  ,--------------/------. .------'~%" )
-  (display "  '--------+ +--.      / /~%" )
-  (display "       ,---+ +--------/ /--,~%" )
-  (display "       '-------------------'~%" )
-  )
-
-(defun title ()
-  (display "THE USS ENTERPRISE --- NCC-1701~%")
-  (display "                   +------*-------,~%" )
-  (display "  ,--------------,  `---. .-------'~%" )
-  (display "  '--------+ +--+      / /~%" )
-  (display "       ,---+ +--------+ +--,~%" )
-  (display "       '-------------------'~%" )
+  (display "            THE USS ENTERPRISE --- NCC-1701~%")
+  (display "                               +------*-------,~%" )
+  (display "              ,--------------,  `---. .-------'~%" )
+  (display "              '--------+ +--+      / /~%" )
+  (display "                   ,---+ +--------+ +--,~%" )
+  (display "                   '-------------------'~%~&~&~&" )
   )
 
 
@@ -568,7 +560,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
        (stc/clear)
        (help-com)))))
 
-
+#|
 (defun mloop-command (data)
   (let ((cmd (car data))
         (args (rest data)))
@@ -581,14 +573,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                 ;; only command prefix
                 (input-course-message "LT. SULU")
                 (state :input-course-check))
-               #+nil ((= part 1)
-                ;; partial warp command direction
-                (setq *с1* (input-course-check (car args)))
-                (when *c1*
-                  (@clt "W-LOOP-part-1" *c1* *new-course*)
-                  (nav-factor-message (if (< (aref *ddd* 1) 0) 0.2 8))
-                  (state :nav-factor))
-                (return-from mloop-command (values)))
                ((= part 2)
                 ;; full warp command direction factor
                 (let ((w-direction (first args))
@@ -653,19 +637,17 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
        (stc/clear)
        (help-com)))))
 
+|#
 
-#|
-
-;;; MLOOP begin
 
 ;;; warp command wrapper
-
 (defun w-single-cmd ()
   ;; entire only command prefix
   (input-course-message "LT. SULU")
   (state :input-course-check))
 
 (defun w-full-cmd (direction factor)
+  (@clt "warp-full" direction factor)
   ;; entire full 'W': direction factor
   (setq *c1* (input-course-check direction))
   ;;(@clt " W partial " part *c1* *new-course*)
@@ -683,6 +665,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
          (t (return-from w-full-cmd (values)))))
 
 (defun warp-handler (data)
+  (@clt "warp-handler" data (car data))
   (let ((part (length data)))
     (cond ((= part 0) (w-single-cmd))
           ((= part 2) (w-full-cmd (first data) (second data)))
@@ -695,22 +678,27 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
    (@def-pgm 'l  (long-range-sensor))
    (@def-pgm 'p  (phaser-message)(state :phaser))
    (@def-pgm 't
-             (cond (args (let ((course (input-course-check (car args))))
-                           ;; enter command: t course
-                           (when course
-                             (decf *energy* 2)
-                             (decf *torpedo* 1)
-                             (torpedo-fire *new-course*)
-                             (setq *klingon-attack* t))
-                           (state :mloop-command)))                     
-                   (t (torpedo-message)
-                      ;; enter command: t
-                      (state :torpedo-course))))
+       (@fsm-data)
+       (@clt "LOOP-T" data)
+     (cond (data (let ((course (input-course-check (car data))))
+                   ;; enter command: t course
+                   (when course
+                     (decf *energy* 2)
+                     (decf *torpedo* 1)
+                     (torpedo-fire *new-course*)
+                     (setq *klingon-attack* t))
+                   (state :mloop-command)))                     
+           (t (torpedo-message)
+              ;; enter command: t
+              (state :torpedo-course))))
    (@def-pgm 'z  (shield-message)(state :shield))
    (@def-pgm 'r (stc/clear)(damage-report))
-   (@def-pgm 'c (cond (args (computer (car args)))
-                      (t  (computer-message)
-                          (state :computer))))
+   (@def-pgm 'c
+       (@fsm-data)
+       (@clt "LOOP-C" data (second data))
+     (cond (data (computer (second data)))
+           (t  (computer-message)
+               (state :computer))))
    (@def-pgm 'x  (end-of-mission))
    ))
 
@@ -720,14 +708,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (funcall (@exec-pgm *loop-pgm
                       (first data)
                       (lambda () (stc/clear)(comp-help)))
-           (car data)
-           (rest data)))
-
-
-;;;; end
-
-|#
-
+           data))
 
 ;;; how many time in warp
 (defun warp-time (w1)
