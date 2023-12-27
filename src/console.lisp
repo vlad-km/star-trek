@@ -1,4 +1,5 @@
 ;;; -*- mode:lisp; coding:utf-8  -*-
+
 #|
 
             /\___/\
@@ -61,7 +62,6 @@
 (defun %write-to-html-stream (args)
   (let ((span (html::empty-span)))
     (ffi:setprop (span "innerHTML") (car args))
-    ;; (setf (jscl::oget span "innerHTML") (car args))
     (funcall (second args) span)
     (funcall (third args) nil)))
 
@@ -92,16 +92,12 @@
 
 
 (defvar *stc-header* nil)
-#+nil (defvar *stc-stardate* nil)
-#+nil (defvar *stc-location* nil)
 (defvar *stc-uss* nil)
 (defvar *stc-state* nil)
 (defvar *stc-command* nil)
 (defvar *stc-input* nil)
 (defvar *stc-output* nil)
-#+nil (defvar *so* nil)
 (defvar *stc-stream* nil)
-#+nil (defvar *stc* nil)
 
 (html:declare-element label)
 (html:declare-element pre)
@@ -200,19 +196,6 @@
                                      :append " STARDATE : ")
                   :append *stc-stardate*))
 
-  #+nil
-  (setq *stc-input*
-        (html:textarea :|id| "stc-input-id"
-                       :|style| (css:inline
-                                 '(:color "#28c428"
-                                   :background-color "#24502a"
-                                   :resize "none"
-                                   :display "inline-table"
-                                   :autocapitalize "characters"
-                                   :spellcheck "false"))
-                       :|rows| "1"
-                       :|cols| "55"))
-
   (setq *stc-input*
         (html:input :|id| "stc-input-id"
                        :|style| (css:inline
@@ -281,7 +264,6 @@
   (%jq-on (#j:$ *stc-input*)
          "keyup"
               (lambda (event)
-                ;;(print (list :event event))
                 (stc/kb-handler event))))
 
 ;;; jquery features. just adds a class `draggable`to the element
@@ -301,8 +283,6 @@
 (defparameter reg-del (ffi:regexp "[\\n\\r]" "g"))
 
 (defun stc/kb-handler (evt)
-  ;;(#j:console:log "KBH" evt)
-  ;;(#j:console:log "Read keycode" (ffi:getprop  evt "keyCode"))
   (let ((el (ffi:getprop evt "target"))
         (data)
         (from-value))
@@ -316,7 +296,6 @@
   (values))
 
 (defun stc/kbd-reader (data)
-  ;;(#j:console:log "kbr" data)
   (let ((stream (make-string-input-stream data))
         (sentinel (gensym "EOF"))
         (s)
@@ -328,6 +307,6 @@
        (push s res)
        (go feeder)
      rdr-eof)
-    (reverse res)))
+    (fill-kbr (reverse res))))
 
 ;;; EOF

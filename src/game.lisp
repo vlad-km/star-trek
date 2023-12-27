@@ -40,10 +40,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
             *state-fsm*
             (mapcar (lambda (x) (list x (type-of x))) (list ,@args)))))
 
-;;;
-
 (defmacro @def-pgm (index &body body)
-  `(cons ,index (lambda (&rest data) ,@body)))
+  `(cons ,index (lambda (data) ,@body)))
 
 (defvar *pgm-abend* (lambda (&optional x) (error "ABEND")))
 
@@ -52,8 +50,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq fn (assoc index pgm :test 'equal))
     (if fn (cdr fn) unknow-index)))
 
-;;; macro for deref ((data)) -> (data)
-(defmacro @fsm-data () `(setq data (car data)))
+;;; keyboard response
+(defstruct (kbr (:type vector) :named) a1 a2 a3 len)
+
+(defun fill-kbr (data)
+  (destructuring-bind (f &optional s th) data
+    (make-kbr :a1 f :a2 s :a3 th :len (length data))))
 
 
 ;;; some kludge for two dimensional array (not implemented in JSCL)
@@ -80,38 +82,17 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (let ((magic (aref *round-base* base)))
     (/ (floor (* num magic)) magic)))
 
-
-
 ;;; pads this string with a given string (repeated, if needed)
 ;;; so that the resulting string reaches a given length.
 ;;; the padding is applied from the end of this string.
-
-#+nil
-(defun strfor (max str)
-  (let ((len (length str))
-        (need)
-        (res))
-
-    (setq need (- max len))
-    (if (> need 0)
-        (progn
-          (dotimes (i need)
-            (push " " res))
-          (apply #'concat str res))
-        str)))
-
 (defun strfor (max str)
   (ffi:|String| str "padEnd" max))
 
 ;;; klingon
-#+nil (das:structure klingon (x 0) (y 0) (energy 0))
 (defstruct (klingon (:type vector) :named) (x 0) (y 0) (energy 0))
 
-
 ;;; QUAD
-#+nil (das:structure quad (visit nil) (base 0) (star 0) (klingon 0))
 (defstruct (quad  (:type vector) :named) (visit nil) (base 0) (star 0) (klingon 0))
-
 
 ;;; quad name
 (defconstant *quad-name1*
@@ -155,13 +136,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun device-name (x)
   (aref  *device-name* x))
 
-
-
 ;;;Constants
 (defconstant *full-energy* 3000)
 (defconstant *full-torpedo* 10) 
 (defconstant *klingon-max-energy* 200)
-
 
 ;;; Global vars
 (defvar *ggg* (make-array '(8 8) :initial-element 0))
@@ -192,8 +170,24 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defvar *new-course* nil)
 (defvar *new-factor* nil)
 
+;;; fsm registers
+(defvar *state-fsm* nil)
+(defvar *c1*)
+(defvar *w1*)
+(defvar *n*)
+(defvar *x0*)
+(defvar *y0*)
+(defvar *x1*)
+(defvar *y1*)
+
+;;; func, who change context for FSM, MLOOP-COMMAND
+(defun state (lbl)
+  (#j:console:log (format nil "STATE ~a ==> ~a" *state-fsm* lbl))
+    (setq *state-fsm* lbl))
+
+;;; uss starter screen
 (defun title ()
-  (display "            THE USS ENTERPRISE --- NCC-1701~%")
+  (display "~&            THE USS ENTERPRISE --- NCC-1701~%")
   (display "                               +------*-------,~%" )
   (display "              ,--------------,  `---. .-------'~%" )
   (display "              '--------+ +--+      / /~%" )
@@ -201,7 +195,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "                   '-------------------'~%~&~&~&" )
   )
 
-
+;;; initialize phase
 (defun init()
     (setq *damage-repair-magic-number* (/ (random 50) 100))
     (setq *success* nil)
@@ -227,26 +221,19 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq *ddd* (make-array 10 :initial-element 0)) ;; no Damage
     )
 
-
-;;;
 (defun klingon-distance(i)
   (let* ((k (aref *kkk* i))
          (xx1 (- (klingon-x k) *ex*))
          (xx2 (- (klingon-y k) *ey*)))
     (floor (+ (sqrt (+ (* xx1 xx1) (* xx2 xx2))) 0.5))))
 
+;;; different generators
+(defun rnd1-8() (1+ (random 8)))
 
-;;;
-(defun rnd1-8()
-  (1+ (random 8)))
+(defun fnrand() (random 8))
 
-(defun fnrand()
-  (random 8))
 
 ;;; MAIN
-
-;;; game control
-
 ;;; start game
 (defun launching ()
   (unless *started*
@@ -272,6 +259,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (title)
   (trek1))
 
+;;; - initialization of all registers and flags
+;;; - creation of the galaxy and mission order
+;;; - the main context is determined - receiving a command
+;;;   from the keyboard
 (defun trek1 ()
   (init)
   (init2)
@@ -281,7 +272,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (state :accept-command)
   (values))
 
-;;; make galaxy
+;;; create a world in just...
+;;;      StarTrek Revelations, ch. 2
 (defun make-galaxy ()
   (make-galaxy1)
   (if (> *klingon-total* *t-period*)
@@ -315,29 +307,28 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
         (sdref *ggg* i j
                (make-quad :klingon k3 :base b3 :star (rnd1-8)))))))
 
-
-;;; new mission display
+;;; new mission display.
+;;; this is the first screen that displayed when you start the game
 (defun print-mission()
   (display "~%YOUR ORDERS ARE AS FOLLOWS:~%")
   (display "--------------------------~%")
   (display "   DESTROY THE ~a KLINGON WARSHIPS WHICH HAVE INVADED~%"
-          *klingon-total*)
+           *klingon-total*)
   (display "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS~%")
   (display "   ON STARDATE ~d. THIS GIVES YOU ~a DAYS.~%"
-          (+ *time0* *t-period*) *t-period* )
-  (display
-          "   THERE ~a ~a STARBASE~a IN THE GALAXY FOR RESUPPLYING YOUR SHIP.~%~%"
-          (if (= *base-total* 1) "IS" "ARE")
-          *base-total*
-          (if (= *base-total* 1) "" "S")))
+           (+ *time0* *t-period*) *t-period* )
+  (display "   THERE ~a ~a STARBASE~a IN THE GALAXY FOR RESUPPLYING YOUR SHIP.~%~%"
+           (if (= *base-total* 1) "IS" "ARE")
+           *base-total*
+           (if (= *base-total* 1) "" "S")))
 
 
-;;; state :accept-command display prompt
+;;; state fsm:accept-command display prompt
 (defun accept-message ()
   (display "~%ARE YOU READY TO ACCEPT COMMAND (Y/N)?~%"))
 
 
-;;; help display
+;;; todo: move to COMPUTER section
 (defun help-com ()
   (display "ENTER ONE OF THE FOLLOWING:~%
 --------------------------
@@ -351,7 +342,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
    C   TO CALL ON LIBRARY-COMPUTER
    X   TO RESIGN YOUR COMMAND~%"))
 
-(defvar *sec*) ;; galaxy sector
+(defvar *sec* nil) ;; galaxy sector
 
 (defun init-sector ()
   (let (x y k)
@@ -388,7 +379,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
           (sdref *sec* x y 's)
           (return))))))
 
-
 ;;; main game loop. read command from console, handle it 
 (defun mloop()
   (@clt "MLOOP")
@@ -413,7 +403,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (fail-mission)
     (return-from mloop nil))
   (state :mloop-command) )
-
 
 ;;; main game loop. execute entered command
 #+nil
@@ -641,36 +630,41 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 ;;; warp command wrapper
-(defun w-single-cmd ()
-  ;; entire only command prefix
-  (input-course-message "LT. SULU")
-  (state :input-course-check))
 
+
+;;; entire only command prefix i.e. (W)
+;;; therefore all keyboard input will be processed
+;;; in this context
+(defun w-single-cmd ()
+  (input-course-message "LT. SULU") ;; prompt
+  (state :input-course-check))      ;; set context for FSM
+
+;;; entire full WARP command: i.e. (W direction factor)
+;;; the command is  perform without changing the current context
 (defun w-full-cmd (direction factor)
   (@clt "warp-full" direction factor)
-  ;; entire full 'W': direction factor
   (setq *c1* (input-course-check direction))
-  ;;(@clt " W partial " part *c1* *new-course*)
-  (cond  (*c1*
-          (setq *w1* (nav-factor factor))
-          (when *w1*
-            (setq *n* (nav-energy *w1*))
-            (unless *n* (return-from w-full-cmd (values)))
-            (klingon-attack-warp)
-            (repair-by-warp *w1*)
-            (damage-by-warp)
-            (when (not (nav4 *new-course* *n* *w1*))
-              (return-from w-full-cmd (values)))
-            (warp-time *w1*)))
-         (t (return-from w-full-cmd (values)))))
+  (cond  (*c1* (setq *w1* (nav-factor factor))
+               (when *w1*
+                 (setq *n* (nav-energy *w1*))
+                 (when *n* 
+                   (klingon-attack-warp)
+                   (repair-by-warp *w1*)
+                   (damage-by-warp)
+                   (if (not (nav4 *new-course* *n* *w1*))
+                       nil
+                       (warp-time *w1*))))))
+  (values))
 
+;;; (aref data 4) it's (kbr-len data)
+;;; it's faster
 (defun warp-handler (data)
-  (@clt "warp-handler" data (car data))
-  (let ((part (length data)))
-    (cond ((= part 0) (w-single-cmd))
-          ((= part 2) (w-full-cmd (first data) (second data)))
-          (t (w-single-cmd)))))
+  (@clt "warp-handler" data)
+    (cond ((= (aref data 4) 1) (w-single-cmd))
+          ((= (aref data 4) 3) (w-full-cmd (aref data 1) (aref data 2)))
+          (t (w-single-cmd))))
 
+;;; command's handler's
 (defvar *loop-pgm
   (list
    (@def-pgm 'w  (warp-handler data))
@@ -678,25 +672,25 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
    (@def-pgm 'l  (long-range-sensor))
    (@def-pgm 'p  (phaser-message)(state :phaser))
    (@def-pgm 't
-       (@fsm-data)
        (@clt "LOOP-T" data)
-     (cond (data (let ((course (input-course-check (car data))))
-                   ;; enter command: t course
-                   (when course
-                     (decf *energy* 2)
-                     (decf *torpedo* 1)
-                     (torpedo-fire *new-course*)
-                     (setq *klingon-attack* t))
-                   (state :mloop-command)))                     
+     (cond ((aref data 2) (let ((course (input-course-check (aref data 2))))
+                            ;; enter command: t course
+                            (when course
+                              (decf *energy* 2)
+                              (decf *torpedo* 1)
+                              (torpedo-fire *new-course*)
+                              (setq *klingon-attack* t))
+                            (state :mloop-command)))                     
            (t (torpedo-message)
               ;; enter command: t
               (state :torpedo-course))))
    (@def-pgm 'z  (shield-message)(state :shield))
    (@def-pgm 'r (stc/clear)(damage-report))
    (@def-pgm 'c
-       (@fsm-data)
-       (@clt "LOOP-C" data (second data))
-     (cond (data (computer (second data)))
+       (@clt "LOOP-C" data)
+     (cond ((= (aref data 4) 2)
+            (computer (aref data 2))
+            (state :computer))
            (t  (computer-message)
                (state :computer))))
    (@def-pgm 'x  (end-of-mission))
@@ -706,9 +700,15 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun mloop-command (data)
   (@clt "MLOOP-receive" data)
   (funcall (@exec-pgm *loop-pgm
-                      (first data)
-                      (lambda () (stc/clear)(comp-help)))
+                      (aref data 1)
+                      (lambda () (stc/clear)(comp-help) (state :mloop-command)))
            data))
+
+;;; then all the functions of the game script,
+;;; as they were defined in the original version
+
+(defvar *new-course* 0)
+(defvar *last-name* nil)
 
 ;;; how many time in warp
 (defun warp-time (w1)
@@ -719,11 +719,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (cond ((> *time* (+ *time0* *t-period*))
            (fail-mission))
           (t t))))
-
-
-;;; input warp/torpedo course
-(defvar *new-course* 0)
-(defvar *last-name* nil)
 
 ;;; input message
 (defun input-course-message (man)
@@ -745,12 +740,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                          (setq *new-course* c1))
                      t) ))))
 
-;;; warp message
+;;; warp factor message
+;;; displayed if the short form of command W was entered
 (defun nav-factor-message (x)
-  ;;(@clt "   nav-factor-message " x)
   (display "WARP FACTOR (0-~a)" x))
 
-;;; warp state1
+;;; warp state1 display
 (defun nav-factor (w1)
   (@clt "   nav-factor" w1)
   (let ((wdamage (aref *ddd* 1)))
@@ -766,14 +761,14 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
            nil)
           (t w1))))
 
-;;; warp state2
+;;; warp state2 display
 (defun nav-energy (w1)
   (@clt "   nav-energy" w1)
   (let ((n (floor (+ (* w1 8) 0.5))))
     (cond ((< *energy* n)
            (stc/terpri)
-           (display "ENGINEERING:   INSUFFICIENT ENERGY AVAILABLE~%")
-           (display "               FOR MANEUVERING AT WARP~a!~%" w1)
+           (display "ENGINEERING: INSUFFICIENT ENERGY AVAILABLE~%")
+           (display "             FOR MANEUVERING AT WARP~a!~%" w1)
            (cond ((or (< *shield* (- n *energy*)) (< (aref *ddd* 7) 0))
                   t)
                  (t (stc/terpri)
@@ -816,7 +811,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq *c-klingons* (quad-klingon g))
     (setq *c-bases* (quad-base g))
     (setq *c-stars* (quad-star g))))
-
 
 ;;; display alarm: fatal error
 (defun energy-check()
@@ -982,7 +976,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "SCIENCE OFFICER SPOCK:   SENSORS SHOW NO ENEMY SHIPS~%")
   (display "                         IN THIS QUADRANT~%"))
 
-;;; display phaser message
+;;; display phaser message's according to the game script
 (defun phaser-message ()
   (cond  ((< (aref *ddd* 4) 0)
           (stc/terpri)
@@ -999,7 +993,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "ENERGY AVAILABLE = ~a UNITS~%" *energy*)
   (display "NUMBER OF UNITS TO FIRE ?"))
 
-;;; display current phaser state
+;;; display current phaser state according to the game script
 (defun phaser4 (x)
   (let ((h) (ke) (kx)
         (ky) (k))
@@ -1266,7 +1260,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                ((< *energy* (/ *full-energy* 10)) (setq *condi* "YELLOW"))
                (t  (setq *condi* "GREEN"))))))
 
-
 ;;; short range sensor display
 (defun short-range-sensor ()
   (@clt "   short-range-sensor ")
@@ -1335,7 +1328,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 (defun computer (a)
   (@clt "COMP" a)
-  ;;(#j:console:log (format nil "Comp receive args ~a" a))
   (funcall (@exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help)))))
 
 #+nil
