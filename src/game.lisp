@@ -40,8 +40,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
             *state-fsm*
             (mapcar (lambda (x) (list x (type-of x))) (list ,@args)))))
 
-;;;
-
 (defmacro @def-pgm (index &body body)
   `(cons ,index (lambda (data) ,@body)))
 
@@ -51,9 +49,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (let (f)
     (setq fn (assoc index pgm :test 'equal))
     (if fn (cdr fn) unknow-index)))
-
-;;; macro for deref ((data)) -> (data)
-(defmacro @fsm-data () `(setq data (car data)))
 
 ;;; keyboard response
 (defstruct (kbr (:type vector) :named) a1 a2 a3 len)
@@ -87,8 +82,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (let ((magic (aref *round-base* base)))
     (/ (floor (* num magic)) magic)))
 
-
-
 ;;; pads this string with a given string (repeated, if needed)
 ;;; so that the resulting string reaches a given length.
 ;;; the padding is applied from the end of this string.
@@ -97,7 +90,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;; klingon
 (defstruct (klingon (:type vector) :named) (x 0) (y 0) (energy 0))
-
 
 ;;; QUAD
 (defstruct (quad  (:type vector) :named) (visit nil) (base 0) (star 0) (klingon 0))
@@ -144,13 +136,10 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun device-name (x)
   (aref  *device-name* x))
 
-
-
 ;;;Constants
 (defconstant *full-energy* 3000)
 (defconstant *full-torpedo* 10) 
 (defconstant *klingon-max-energy* 200)
-
 
 ;;; Global vars
 (defvar *ggg* (make-array '(8 8) :initial-element 0))
@@ -181,7 +170,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defvar *new-course* nil)
 (defvar *new-factor* nil)
 
-
 ;;; fsm registers
 (defvar *state-fsm* nil)
 (defvar *c1*)
@@ -197,10 +185,9 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (#j:console:log (format nil "STATE ~a ==> ~a" *state-fsm* lbl))
     (setq *state-fsm* lbl))
 
-
 ;;; uss starter screen
 (defun title ()
-  (display "            THE USS ENTERPRISE --- NCC-1701~%")
+  (display "~&            THE USS ENTERPRISE --- NCC-1701~%")
   (display "                               +------*-------,~%" )
   (display "              ,--------------,  `---. .-------'~%" )
   (display "              '--------+ +--+      / /~%" )
@@ -233,7 +220,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (setq *ey* (random 8)) ;; Sector Y
     (setq *ddd* (make-array 10 :initial-element 0)) ;; no Damage
     )
-;;;
+
 (defun klingon-distance(i)
   (let* ((k (aref *kkk* i))
          (xx1 (- (klingon-x k) *ex*))
@@ -247,9 +234,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 ;;; MAIN
-
-;;; game control
-
 ;;; start game
 (defun launching ()
   (unless *started*
@@ -419,7 +403,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (fail-mission)
     (return-from mloop nil))
   (state :mloop-command) )
-
 
 ;;; main game loop. execute entered command
 #+nil
@@ -647,10 +630,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 ;;; warp command wrapper
+
+
+;;; entire only command prefix i.e. (W)
+;;; therefore all keyboard input will be processed
+;;; in this context
 (defun w-single-cmd ()
-  ;; entire only command prefix i.e. (W)
-  ;; therefore all keyboard input will be processed
-  ;;; in this context
   (input-course-message "LT. SULU") ;; prompt
   (state :input-course-check))      ;; set context for FSM
 
@@ -679,7 +664,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
           ((= (aref data 4) 3) (w-full-cmd (aref data 1) (aref data 2)))
           (t (w-single-cmd))))
 
-;;; command's handler
+;;; command's handler's
 (defvar *loop-pgm
   (list
    (@def-pgm 'w  (warp-handler data))
