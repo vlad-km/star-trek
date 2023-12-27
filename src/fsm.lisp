@@ -171,25 +171,32 @@
 (defvar *fsm-pgm
   (list
 
+   ;; launch point
    (@def-pgm :accept-command
        (@clt "FSM" data (kbr-a1 data) (kbr-a2 data) (kbr-a3 data))
      (cond ((eql (kbr-a1 data) 'n)
             (end-of-game))
            (t (enter-quad)
               (mloop))))
-
+   ;; all input will be processed at (mloop-command)
    (@def-pgm :mloop-command
        (@clt "FSM" data (kbr-a1 data) (kbr-a2 data) (kbr-a3 data))
      (mloop-command data)
      (values))
-   
+
+   ;; issue an invitation to enter a course
+   ;; and switch context
    (@def-pgm :navigate
        (input-course-message "LT. SULU")
      (state :input-course-check)
      (values))
 
+   ;; check the validity of the course
+   ;; display course
+   ;; issue an invitation to enter the warp factor
+   ;; switch context
    (@def-pgm :input-course-check
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (setq *c1* (input-course-check (aref data 1)))
      (when *c1*
        (display ": ~a " *new-course*)
@@ -197,8 +204,10 @@
        (state :nav-factor))
      (values))
 
+   ;; execute attack script,
+   ;; switch context to command input   
    (@def-pgm :nav-factor
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (state :mloop-command)
      (setq *w1* (nav-factor (aref data 1)))
      (when *w1*
@@ -212,8 +221,13 @@
                 (t (warp-time *w1*)))))
      (values))
 
+   ;; the T command was previously given without a parameter
+   ;; a prompt to enter a torpedo course is displayed
+   ;; get the course from the reader
+   ;; execute the command and display the result
+   ;; switch the context to processing starship control commands
    (@def-pgm :torpedo-course
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (setq *c1* (input-course-check (aref data 1)))
      (when *c1*
        (display ": ~a~%" *new-course*)
@@ -224,27 +238,32 @@
      (state :mloop-command)
      (values))
 
+   ;; the P command was previously given without a parameter
+   ;; a prompt to enter a phaser units is displayed
+   ;; get the units from the reader
+   ;; execute the command PHASER and display the result
+   ;; switch the context to processing starship control commands
    (@def-pgm :phaser
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (display ": ~a~%" (aref data 1))
      (phaser4 (aref data 1))
      (state :mloop-command)
      (values))
 
    (@def-pgm :shield
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (display ": ~a~%" (aref data 1))
      (shield (aref data 1))
      (state :mloop-command)
      (values))
 
    (@def-pgm :computer
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (computer (aref data 1))
      (values))
 
    (@def-pgm :comp-calc
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (display ": ~a~%" (aref data 1))
      (setq *x0* (aref data 1))
      (setq *y0* (aref data 2))
@@ -253,7 +272,7 @@
      (values))
 
    (@def-pgm :comp-calc-y
-     (setq *y0* data)
+       (setq *y0* data)
      ;; note: wtf?
      ;; note: the state never use
      (format t "FINAL COORDINATES X?")
@@ -261,7 +280,7 @@
      (values))
 
    (@def-pgm :comp-calc-final-x
-     (setq *x1* data)
+       (setq *x1* data)
      ;; note: wtf?
      ;; note: the state never use
      (format t "Y?")
@@ -269,7 +288,7 @@
      (values))
 
    (@def-pgm :comp-calc-final-co
-     (display ": ~a~%" (list (aref data 1) (aref data 2)))
+       (display ": ~a~%" (list (aref data 1) (aref data 2)))
      (@clt "FSM" data)
      (setq *x1* (aref data 1))
      (setq *y1* (aref data 2))
@@ -288,7 +307,7 @@
      (values))
 
    (@def-pgm :more-mission
-     (@clt "FSM" data)
+       (@clt "FSM" data)
      (if (eql (aref data 1) 'bye)
          (rx:emit :new-mission nil))
      (values))
