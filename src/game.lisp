@@ -42,12 +42,12 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 ;;;
 
-(defmacro %def-pgm (index &body body)
+(defmacro @def-pgm (index &body body)
   `(cons ,index (lambda (&rest data) ,@body)))
 
 (defvar *pgm-abend* (lambda (&optional x) (error "ABEND")))
 
-(defun %exec-pgm (pgm index &optional (unknow-index *pgm-abend*))
+(defun @exec-pgm (pgm index &optional (unknow-index *pgm-abend*))
   (let (f)
     (setq fn (assoc index pgm :test 'eq))
     (if fn (cdr fn) unknow-index)))
@@ -690,16 +690,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 (defvar *loop-pgm
   (list
-   ;; warp 
-   (%def-pgm 'w  (warp-handler data))
-   ;; short sensor
-   (%def-pgm 's  (stc/clear)(short-range-sensor))
-   ;; long sensor
-   (%def-pgm 'l  (long-range-sensor))
-   ;; phaser
-   (%def-pgm 'p  (phaser-message)(state :phaser))
-   ;; torpedo
-   (%def-pgm 't
+   (@def-pgm 'w  (warp-handler data))
+   (@def-pgm 's  (stc/clear)(short-range-sensor))
+   (@def-pgm 'l  (long-range-sensor))
+   (@def-pgm 'p  (phaser-message)(state :phaser))
+   (@def-pgm 't
              (cond (args (let ((course (input-course-check (car args))))
                            ;; enter command: t course
                            (when course
@@ -711,22 +706,18 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                    (t (torpedo-message)
                       ;; enter command: t
                       (state :torpedo-course))))
-   ;; shield
-   (%def-pgm 'z  (shield-message)(state :shield))
-   ;; repair
-   (%def-pgm 'r (stc/clear)(damage-report))
-   ;; computer
-   (%def-pgm 'c (cond (args (computer (car args)))
+   (@def-pgm 'z  (shield-message)(state :shield))
+   (@def-pgm 'r (stc/clear)(damage-report))
+   (@def-pgm 'c (cond (args (computer (car args)))
                       (t  (computer-message)
                           (state :computer))))
-   ;; end ofmission
-   (%def-pgm 'x  (end-of-mission))
+   (@def-pgm 'x  (end-of-mission))
    ))
 
 
 (defun mloop-command (data)
   (@clt "MLOOP-receive" data)
-  (funcall (%exec-pgm *loop-pgm
+  (funcall (@exec-pgm *loop-pgm
                       (first data)
                       (lambda () (stc/clear)(comp-help)))
            (car data)
@@ -772,7 +763,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                          (setq *new-course* 0)
                          (setq *new-course* c1))
                      t) ))))
-
 
 ;;; warp message
 (defun nav-factor-message (x)
@@ -1241,7 +1231,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "~%IT IS STARDATE ~d.~%" *time*)
   (end-of-mission ))
 
-;;; Fail destroyed
+;;; Fail destroyed display
 (defun enterprise-destroyed ()
   (display "~%THE ENTERPRISE HAS BEEN DESTROYED.~%")
   (display "  THE FEDERATION WILL BE CONQUERED.~%")
@@ -1261,7 +1251,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
          (display "LET HIM STEP FORWARD AND ENTER 'AYE'" )
          (state :more-mission) )))
 
-;;; success
+;;; mission success display
 (defun success ()
   (let ((x (/ *klingon-org* (- *time* *time0*))))
     (display "CONGRATULATIONS, CAPTAIN!  THE LAST KLINGON BATTLE CRUISER~%")
@@ -1296,7 +1286,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
                (t  (setq *condi* "GREEN"))))))
 
 
-;;; short range sensor
+;;; short range sensor display
 (defun short-range-sensor ()
   (@clt "   short-range-sensor ")
   (let ((fff))
@@ -1332,9 +1322,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
    (lambda() (display "        SHIELDS            ~d" *shield*))
    (lambda() (display "        KLINGONS REMAINING ~a" *klingon-total*))))
 
-
 ;;; COMPUTER
-
 ;;; computer help display
 (defun comp-help ()
   (display "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:~%")
@@ -1347,7 +1335,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "   Z   GALAXY 'REGION NAME' MAP~%")
   (display "   O   OPERATIONAL WRAP/TORPEDO MANUAL~&"))
 
-
 ;;; computer state report display
 (defun computer-message ()
     (if (< (aref *ddd* 8) 0)
@@ -1357,18 +1344,18 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 ;;; computer itself
 (defvar *comp-pgm
   (list
-   (%def-pgm 'g  (stc/clear)(comp-galaxy-rec)(state :mloop-command))
-   (%def-pgm 's  (stc/clear)(comp-stat-repo)(state :mloop-command))
-   (%def-pgm 't  (comp-torpedo)(state :mloop-command))
-   (%def-pgm 'b  (base-nav)(state :mloop-command))
-   (%def-pgm 'n  (comp-calc-message)(state :comp-calc))
-   (%def-pgm 'z  (stc/clear)(comp-galaxy-name-map)(state :mloop-command))
-   (%def-pgm 'o  (stc/clear)(comp-direction-help)(state :mloop-command))))
+   (@def-pgm 'g  (stc/clear)(comp-galaxy-rec)(state :mloop-command))
+   (@def-pgm 's  (stc/clear)(comp-stat-repo)(state :mloop-command))
+   (@def-pgm 't  (comp-torpedo)(state :mloop-command))
+   (@def-pgm 'b  (base-nav)(state :mloop-command))
+   (@def-pgm 'n  (comp-calc-message)(state :comp-calc))
+   (@def-pgm 'z  (stc/clear)(comp-galaxy-name-map)(state :mloop-command))
+   (@def-pgm 'o  (stc/clear)(comp-direction-help)(state :mloop-command))))
 
 (defun computer (a)
   (@clt "COMP" a)
-  (#j:console:log (format nil "Comp receive args ~a" a))
-  (funcall (%exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help)))))
+  ;;(#j:console:log (format nil "Comp receive args ~a" a))
+  (funcall (@exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help)))))
 
 #+nil
 (defun computer (a)
@@ -1545,8 +1532,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 
 
 (defun comp-direction-help ()
-  (display "               WARP / TORPEDO~&")
-  (display "          =======================~&~&")
+  (display "               WARP / TORPEDO DIRECTION~&")
+  (display "              ==========================~&~&")
   (display "  DIRECTION IS IN A CIRCULAR NUMERICAL       7    0    1~&")
   (display "  VECTOR ARRANGEMENT AS SHOWN.                `.  :  .' ~&")
   (display "  INTERGER AND REAL VALUES MAY BE               `.:.'   ~&")
@@ -1557,6 +1544,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "~&")
   (display "                                               COURSE~&")
   (display "~&")
+  (display "                   WARP FACTOR~&")
+  (display "                   ===========~&")
   (display "  ONE 'WARP FACTOR' IS THE SIZE OF ONE QUADRANT. THEREFORE~&")
   (display "  TO GET FROM QUADRANT 5,6 TO 5,5 YOU WOULD USE COURSE 3~&")
   (display "  WARP FACTOR 1. COORDINATES ARE SPECIFIED USING X Y NOTATION~&")
