@@ -247,10 +247,37 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (title)
   (trek1))
 
-;;; to land. just hide console, nulled *started* flag
-(defun toland ()
-  (setq *started nil)
+;;; new missiom
+(defun next-generation ()
+  (setq *ggg* (make-array '(8 8) :initial-element 0))
+  (setq *kkk* (make-array '(4) :initial-element 0))
+  (stc/clear)
+  (title)
+  (trek1))
+
+(rx:listen :new-mission (lambda (&optional _)(next-generation)))
+
+
+;;; clear the environment for possible new
+;;; call launching
+;;; the function call from fsm:new-mission
+(defun fuck-all-them ()
+  (setq *ggg* (make-array '(8 8) :initial-element 0))
+  (setq *kkk* (make-array '(4) :initial-element 0))
+  (setq *started* nil)
+  (stc/drop-all))
+
+;;; entry point for a short command from the jq-console
+;;; something like CTRL-D
+;;; make widget invisible
+(defun hide ()
+  (setq *started* nil)
   (stc/hide))
+
+;;; make visible
+(defun show ()
+  (setq *started* t)
+  (stc/show))
 
 ;;; note: unused func, see trek1
 (defun trek ()
@@ -408,237 +435,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (state :mloop-command) )
 
 ;;; main game loop. execute entered command
-#+nil
-(defun mloop-command (cmd)
-  (@clt "MLOOP-COMMAND" cmd (consp cmd) (symbolp cmd))
-  (case cmd
-    ((W)
-     ;; warp
-     (input-course-message "LT. SULU")
-     (state :input-course-check))
-    ((S)
-     ;; short range radar
-     (stc/clear)
-     (short-range-sensor))
-    ((L)
-     ;; long range radar
-     (long-range-sensor))
-    ((P)
-     ;; phaser
-     (phaser-message)
-     (state :phaser))
-    ((T)
-     ;; torpedo
-     (torpedo-message)
-     (state :torpedo-course))
-    ((Z)
-     ;; shield
-     (shield-message)
-     (state :shield))
-    ((R)
-     ;; damage report
-     (stc/clear)
-     (damage-report))
-    ((C)
-     ;; computer
-     (computer-message)
-     (state :computer))
-    ((M)
-     ;; manual
-     (operational-manual))
-    ((x)
-     ;; done
-     (end-of-mission))
-    (otherwise
-     ;; help
-     (stc/clear)
-     (help-com))))
 
-#+nil
-(defun mloop-command (data)
-  (let ((cmd (car data))
-        (args (rest data)))
-    (@clt "MLOOP-COMMAND" data cmd args)
-    (case cmd
-      ((W)
-       ;; warp
-       (input-course-message "LT. SULU")
-       (state :input-course-check))
-      ((S)
-       ;; short range radar
-       (stc/clear)
-       (short-range-sensor))
-      ((L)
-       ;; long range radar
-       (long-range-sensor))
-      ((P)
-       ;; phaser
-       (phaser-message)
-       (state :phaser))
-      ((T)
-       ;; torpedo
-       (torpedo-message)
-       (state :torpedo-course))
-      ((Z)
-       ;; shield
-       (shield-message)
-       (state :shield))
-      ((R)
-       ;; damage report
-       (stc/clear)
-       (damage-report))
-      ((C)
-       ;; computer
-       (cond (args (computer (car args)))
-             (t  (computer-message)
-                 (state :computer))))
-      ((M)
-       ;; manual
-       (operational-manual))
-      ((x)
-       ;; done
-       (end-of-mission))
-      (otherwise
-       ;; help
-       (stc/clear)
-       (help-com)))))
-
-#+nil
-(defun mloop-command (data)
-  (let ((cmd (car data))
-        (args (rest data)))
-    (@clt "MLOOP-COMMAND" data cmd args)
-    (case cmd
-      ((W) ;; warp
-       (input-course-message "LT. SULU")
-       (state :input-course-check))
-      ((S) ;; short range radar
-       (stc/clear)
-       (short-range-sensor))
-      ((L) ;; long range radar
-       (long-range-sensor))
-      ((P) ;; phaser
-       (phaser-message)
-       (state :phaser))
-      ((T) ;; torpedo
-       (cond (args (let ((course (input-course-check(car args))))
-                     ;; enter command t course
-                     ;; may be this code move to FSM:torpedo-fair
-                     (when course
-                       (decf *energy* 2)
-                       (decf *torpedo* 1)
-                       (torpedo-fire *new-course*)
-                       (setq *klingon-attack* t))
-                     (state :mloop-command)))                     
-             (t (torpedo-message)
-                ;; enter command t
-                (state :torpedo-course))))
-      ((Z) ;; shield
-       (shield-message)
-       (state :shield))
-      ((R) ;; damage report
-       (stc/clear)
-       (damage-report))
-      ((C) ;; computer
-       (cond (args (computer (car args)))
-             (t  (computer-message)
-                 (state :computer))))
-      ((M) ;; manual
-       (operational-manual))
-      ((x) ;; done
-       (end-of-mission))
-      (otherwise
-       ;; help
-       (stc/clear)
-       (help-com)))))
-
-#|
-(defun mloop-command (data)
-  (let ((cmd (car data))
-        (args (rest data)))
-    (@clt "MLOOP-COMMAND" data cmd args)
-    (case cmd
-      ((W) ;; warp => w direction factor
-       (let ((part (length args)))
-         (@clt "W-MLOOP" part)
-         (cond ((= part 0)
-                ;; only command prefix
-                (input-course-message "LT. SULU")
-                (state :input-course-check))
-               ((= part 2)
-                ;; full warp command direction factor
-                (let ((w-direction (first args))
-                      (w-factor (second args)))
-                  (setq *c1* (input-course-check w-direction))
-                  (@clt " W partial " part *c1* *new-course*)
-                  (cond  (*c1*
-                          (setq *w1* (nav-factor w-factor))
-                          (when *w1*
-                            (display "Wfull nav-factor: ~a~%" *w1*)
-                            (setq *n* (nav-energy *w1*))
-                            (unless *n* (return-from mloop-command (values)))
-                            (klingon-attack-warp)
-                            (repair-by-warp *w1*)
-                            (damage-by-warp)
-                            (when (not (nav4 *new-course* *n* *w1*))
-                              (return-from mloop-command (values)))
-                            (warp-time *w1*))
-                          (return-from mloop-command (values)))
-                         (t
-                          ;; wtf?
-                          (input-course-message "LT. SULU")
-                          (state :input-course-check)
-                          )))))))
-      ((S) ;; short range radar
-       (stc/clear)
-       (short-range-sensor))
-      ((L) ;; long range radar
-       (long-range-sensor))
-      ((P) ;; phaser
-       (phaser-message)
-       (state :phaser))
-      ((T) ;; torpedo
-       (cond (args (let ((course (input-course-check(car args))))
-                     ;; enter command t course
-                     ;; may be this code move to FSM:torpedo-fair
-                     (when course
-                       (decf *energy* 2)
-                       (decf *torpedo* 1)
-                       (torpedo-fire *new-course*)
-                       (setq *klingon-attack* t))
-                     (state :mloop-command)))                     
-             (t (torpedo-message)
-                ;; enter command t
-                (state :torpedo-course))))
-      ((Z) ;; shield
-       (shield-message)
-       (state :shield))
-      ((R) ;; damage report
-       (stc/clear)
-       (damage-report))
-      ((C) ;; computer
-       (cond (args (computer (car args)))
-             (t  (computer-message)
-                 (state :computer))))
-      #+nil ((M) ;; manual
-       (operational-manual))
-      ((x) ;; done
-       (end-of-mission))
-      (otherwise
-       ;; help
-       (stc/clear)
-       (help-com)))))
-
-|#
-
-
-;;; warp command wrapper
-
-
-;;; entire only command prefix i.e. (W)
+;;; W: entire only command prefix i.e. (W)
 ;;; therefore all keyboard input will be processed
 ;;; in this context
-(defun w-single-cmd ()
+(defun w-partial-cmd ()
   (input-course-message "LT. SULU") ;; prompt
   (state :input-course-check))      ;; set context for FSM
 
@@ -647,58 +448,82 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun w-full-cmd (direction factor)
   (@clt "warp-full" direction factor)
   (setq *c1* (input-course-check direction))
-  (cond  (*c1* (setq *w1* (nav-factor factor))
-               (when *w1*
-                 (setq *n* (nav-energy *w1*))
-                 (when *n* 
-                   (klingon-attack-warp)
-                   (repair-by-warp *w1*)
-                   (damage-by-warp)
-                   (if (not (nav4 *new-course* *n* *w1*))
-                       nil
-                       (warp-time *w1*))))))
+  (cond  (*c1*
+          (setq *w1* (nav-factor factor))
+          (when *w1*
+            (setq *n* (nav-energy *w1*))
+            (when *n* 
+              (klingon-attack-warp)
+              (repair-by-warp *w1*)
+              (damage-by-warp)
+              (if (not (nav4 *new-course* *n* *w1*))
+                  nil
+                  (warp-time *w1*))))))
   (values))
 
 ;;; (aref data 4) it's (kbr-len data)
 ;;; it's faster
 (defun warp-handler (data)
   (@clt "warp-handler" data)
-    (cond ((= (aref data 4) 1) (w-single-cmd))
-          ((= (aref data 4) 3) (w-full-cmd (aref data 1) (aref data 2)))
-          (t (w-single-cmd))))
+    (cond ((= (aref data 4) 1) (w-partial-cmd))
+          ((= (aref data 4) 3) (w-full-cmd (aref data 2) (aref data 3)))
+          (t (w-partial-cmd))))
 
+
+;;; T: entire only command prefix i.e. (T)
+;;; therefore all keyboard input will be processed
+;;; in this context
+(defun t-partial-cmd ()
+  (input-course-message "LT. SULU") ;; prompt
+  (state :torpedo-course))          ;; set context for FSM
+
+;;; entire full TORPEDO command: i.e. (T direction)
+;;; the command is  perform without changing the current context
+(defun t-full-cmd (direction)
+  (@clt "torpedo-full" direction)
+  (setq *c1* (input-course-check direction))
+  (cond (*c1*
+         (decf *energy* 2)
+         (decf *torpedo* 1)
+         (torpedo-fire *new-course*)
+         (setq *klingon-attack* t)
+         (state :mloop-command))
+        (t nil))
+  (values))
+
+(defun torpedo-handler (data)
+  (@clt "torpedo-handler" data)
+    (cond ((= (aref data 4) 1) (t-partial-cmd))
+          ((= (aref data 4) 2) (t-full-cmd (aref data 2)))
+          (t  (t-partial-cmd))))
+
+
+;;; C command handler
+(defun computer-handler (data)
+  (@clt "computer-handler" data)
+  (cond ((= (aref data 4) 2)
+         ;; entering full C command
+         ;; perform command, without change state
+         (computer (aref data 2)))
+        (t  (computer-message)
+            ;; partial C command
+            ;; display prompt message, wait for command input
+            ;; perform command 
+            (state :computer))))
+  
 ;;; command's handler's
 (defvar *loop-pgm
   (list
    (@def-pgm 'w  (warp-handler data))
-   (@def-pgm 's  (stc/clear)(short-range-sensor))
+   (@def-pgm 's  (stc/clear)(repo-entering-quad-stat)(short-range-sensor))
    (@def-pgm 'l  (long-range-sensor))
-   (@def-pgm 'p  (phaser-message)(state :phaser))
-   (@def-pgm 't
-       (@clt "LOOP-T" data)
-     (cond ((aref data 2) (let ((course (input-course-check (aref data 2))))
-                            ;; enter command: t course
-                            (when course
-                              (decf *energy* 2)
-                              (decf *torpedo* 1)
-                              (torpedo-fire *new-course*)
-                              (setq *klingon-attack* t))
-                            (state :mloop-command)))                     
-           (t (torpedo-message)
-              ;; enter command: t
-              (state :torpedo-course))))
+   (@def-pgm 'p  (when (phaser-message)(state :phaser)))
+   (@def-pgm 't  (torpedo-handler data))
    (@def-pgm 'z  (shield-message)(state :shield))
-   (@def-pgm 'r (stc/clear)(damage-report))
-   (@def-pgm 'c
-       (@clt "LOOP-C" data)
-     (cond ((= (aref data 4) 2)
-            (computer (aref data 2))
-            (state :computer))
-           (t  (computer-message)
-               (state :computer))))
-   (@def-pgm 'x  (end-of-mission))
+   (@def-pgm 'r  (stc/clear)(damage-report))
+   (@def-pgm 'c  (computer-handler data))
+   (@def-pgm 'x  (end-of-mission)(more-mission-message))
    ))
-
 
 (defun mloop-command (data)
   (@clt "MLOOP-receive" data)
@@ -927,8 +752,8 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (cond (flag
            (stc/terpri)
            (display "LT. UHURA: MESSAGE FROM STARFLEET COMMAND:~%")
-           (display "      PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER~%")
-           (display "      IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.~%~%")
+           (display "           PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER~%")
+           (display "           IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.~%~%")
            (display "CHIEF ENGINEER SCOTT:  WARP ENGINES SHUT DOWN~%")
            (display "                       AT SECTOR ~a,~a OF QUADRANT ~a,~a~%"
                    *ex* *ey* *qx* *qy*)
@@ -982,19 +807,20 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 ;;; display phaser message's according to the game script
 (defun phaser-message ()
   (cond  ((< (aref *ddd* 4) 0)
-          (stc/terpri)
+          ;;(stc/terpri)
           (display "PHASERS INOPERATIVE.~%")
-          (return-from phaser-message (values)))
+          (return-from phaser-message nil))
          ((<= *c-klingons* 0)
           (noenemy)
-          (return-from phaser-message (values)))
+          (return-from phaser-message nil))
          ((< (aref *ddd* 8) 0)
-          (stc/terpri)
+          ;;(stc/terpri)
           (display "COMPUTER FAILURE HAMPERS ACCURACY.~%"))
          (t (stc/terpri)
             (display "PHASERS LOCKED ON TARGET.~%")))
   (display "ENERGY AVAILABLE = ~a UNITS~%" *energy*)
-  (display "NUMBER OF UNITS TO FIRE ?"))
+  (display "NUMBER OF UNITS TO FIRE ?")
+  t)
 
 ;;; display current phaser state according to the game script
 (defun phaser4 (x)
@@ -1177,7 +1003,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
     (cond((<  (aref *ddd* (1+ i)) 0)
           (setf (aref *ddd* (1+ i)) 0)))))
 
-
 ;;; klingon attack
 (defun klingon-attack ()
   (cond ((<= *c-klingons* 0) t)
@@ -1212,7 +1037,7 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 ;;; Fail destroyed display
 (defun enterprise-destroyed ()
   (display "~%THE ENTERPRISE HAS BEEN DESTROYED.~%")
-  (display "  THE FEDERATION WILL BE CONQUERED.~%")
+  (display "THE FEDERATION WILL BE CONQUERED.~%")
   (fail-mission))
 
 ;;; end of mission
@@ -1221,12 +1046,11 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
   (display "THE END OF YOUR MISSION.~%")
   (setq *mission-end* t))
 
-;;; more-mission
 (defun more-mission-message ()
   (cond ((/= *base-total* 0)
          (display "~%THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER~%")
          (display "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,~%")
-         (display "LET HIM STEP FORWARD AND ENTER 'AYE'" )
+         (display "LET HIM STEP FORWARD AND ENTER 'AVE'" )
          (state :more-mission) )))
 
 ;;; mission success display
@@ -1332,35 +1156,6 @@ revision original code (1973) by Terry Newton http://newton.freehostia.com/hp/ba
 (defun computer (a)
   (@clt "COMP" a)
   (funcall (@exec-pgm *comp-pgm a (lambda () (stc/clear)(comp-help))) nil))
-
-#+nil
-(defun computer (a)
-  (@clt "COMP")
-    (case a
-      ((g)
-       (stc/clear)
-       (comp-galaxy-rec)
-       (state :mloop-command))
-      ((s)
-       (stc/clear)
-       (comp-stat-repo)
-       (state :mloop-command))
-      ((t)
-       (comp-torpedo)
-       (state :mloop-command))
-      ((b)
-       (base-nav)
-       (state :mloop-command))
-      ((n)
-       (comp-calc-message)
-       (state :comp-calc) )
-      ((z)
-       (stc/clear)
-       (comp-galaxy-name-map)
-       (state :mloop-command))
-      (otherwise
-       (stc/clear)
-       (comp-help))))
 
 ;;; galaxy map display
 (defun comp-galaxy-name-map()
