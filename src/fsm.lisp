@@ -184,6 +184,12 @@
      (mloop-command data)
      (values))
 
+   (@def-pgm :more-mission
+       (@clt "FSM" data)
+     (cond ((eql (aref data 1) 'ave)(rx:emit :new-mission nil))
+           (t (fuck-all-them)))
+     (values))
+   
    ;; issue an invitation to enter a course
    ;; and switch context
    (@def-pgm :navigate
@@ -204,7 +210,7 @@
        (state :nav-factor))
      (values))
 
-   ;; execute attack script,
+   ;; perform attack script,
    ;; switch context to command input   
    (@def-pgm :nav-factor
        (@clt "FSM" data)
@@ -260,6 +266,7 @@
    (@def-pgm :computer
        (@clt "FSM" data)
      (computer (aref data 1))
+     (state :mloop-command)
      (values))
 
    (@def-pgm :comp-calc
@@ -304,12 +311,6 @@
             (incf *time* (+ *d3-repair* 0.1))
             (show-stat-repair)))
      (state :mloop-command)
-     (values))
-
-   (@def-pgm :more-mission
-       (@clt "FSM" data)
-     (if (eql (aref data 1) 'bye)
-         (rx:emit :new-mission nil))
      (values))
    ))
 
