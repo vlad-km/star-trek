@@ -220,7 +220,8 @@
                   :|style.margin| "0px"
                   :|style.position| "relative"
                   :|style.min-height| "100%"
-                  :|style.box-sizing| "border-box"))
+                  :|style.box-sizing| "border-box"
+                  :|style.font-family| "Consolas"))
 
   (setq *so* (stc/make-html-output-stream *stc-stream*))
 
