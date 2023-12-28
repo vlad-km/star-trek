@@ -278,6 +278,8 @@
         (fn (ffi:getprop pvp "draggable")))
     (ffi:bind-call fn)))
 
+(defun stc/drop-all()
+  (html:umount  *stc*))
 
 ;;; console reader
 (defparameter reg-del (ffi:regexp "[\\n\\r]" "g"))
