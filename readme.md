@@ -23,106 +23,19 @@ Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
 
 <p align="center">
   <a href="https://github.com/vlad-km">
-    <img src="images/uss.bmp"/>
+    <img src="images/uss.png"/>
   </a>
 </p>
 
-In this implementation the stars are represented by the symbol _`*` _
 
 <p align="center">
   <a href="https://github.com/vlad-km">
-    <img src="images/mistart.bmp"/>
+    <img src="images/mistart.png"/>
   </a>
 </p>
 
 ___
 
-## Navigation
-
-
-Coordinates System
-displayed as (X,Y), that means (_`see below`_): 
-- X  _`by vertical`_
-- Y  _`by horizontal`_
-
-___
-<p align="center">
-  <a href="https://github.com/vlad-km">
-    <img src="original/fig1.jpg"/>
-  </a>
-</p>
-
-
-### Legend
-- E __`Enterprise`__ _`is at (5,0)`_
-- K __`Klingon`__ _`is at (6,7)`_
-- S __`Star`__ _`lot of them`_
-
-___
-
-## Direction specification (Warp/Torpedo)
-
-You can specify with real number (ex. floating point).
-
-___
-
-<p align="center">
-  <a href="https://github.com/vlad-km">
-    <img src="original/fig2.jpg"/>
-  </a>
-</p>
-
-```
-        DIRECTION IS IN A CIRCULAR NUMERICAL       7    0    1
-        VECTOR ARRANGEMENT AS SHOWN.                `.  :  .' 
-        INTERGER AND REAL VALUES MAY BE               `.:.'   
-        USED.  THEREFORE COURSE 1.5 IS             6---<*>---2
-        HALF WAY BETWEEN 1 AND 2.                     .':`.   
-                                                    .'  :  ` .
-                                                    5   4    3
-      
-                                                     COURSE
-      
-        ONE 'WARP FACTOR' IS THE SIZE OF ONE QUADRANT. THEREFORE
-        TO GET FROM QUADRANT 5,6 TO 5,5 YOU WOULD USE COURSE 3
-        WARP FACTOR 1. COORDINATES ARE SPECIFIED USING X Y NOTATION
-        WITH X 1-8 FROM LEFT-RIGHT AND Y 1-8 FROM TOP-BOTTOM.
-
-```
-___
-
-
-## Command reference
-
-### Commands
-
-- W  **`WARP`**
-- S  **`FOR SHORT RANGE SENSOR SCAN`**  _**`SHORT RANGE SENSOR SCAN
-       PRINTS THE QUADRANT YOU ARE CURRENTLY IN, INCLUDING
-       STARS, KLINGONS, STARBASES, AND THE ENTERPRISE; ALONG
-       WITH OTHER PERTINATE INFORMATION`**_
-- L  **`FOR LONG RANGE SENSOR SCAN`**  _**`SHOWS CONDITIONS IN SPACE FOR ONE QUADRANT ON EACH SIDE
-      OF THE ENTERPRISE IN THE MIDDLE OF THE SCAN. THE SCAN IS CODED IN THE FORM XXX,
-      WHERE THE UNITS DIGIT IS THE NUMBER OF STARS, THE TENS DIGIT IS THE NUMBER OF STAR-BASES,
-      THE HUNDREDS DIGIT IS THE NUMBER OF KLINGONS`**_
-- P  _`TO FIRE PHASERS`_
-- T  _`TO FIRE PHOTON TORPEDOES`_
-- Z  _`TO RAISE OR LOWER SHIELDS`_
-- R  _`FOR DAMAGE CONTROL REPORTS`_
-- C  _`TO CALL ON LIBRARY-COMPUTER`_
-- X  _`TO RESIGN YOUR COMMAND`_
-
-
-### Library Computer Commands
-
-- G  _`CUMULATIVE GALACTIC RECORD`_
-- S  _`STATUS REPORT`_
-- T  _`PHOTON TORPEDO DATA`_
-- B  _`STARBASE NAV DATA`_
-- N  _`DIRECTION/DISTANCE CALCULATOR`_
-- Z  _`GALAXY *REGION NAME* MAP`_
-
-___
 
 ## Supported platform:
 - Windows
