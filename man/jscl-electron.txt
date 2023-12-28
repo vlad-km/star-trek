@@ -1,0 +1,185 @@
+                       How to work with JSCL on the Electron platform.
+                                     Only for MS Windows
+
+
+1. Create a directory in which your working environment will be located
+    cd <mountpoint>
+    mkdir <youplace>
+
+2. Install NODE.js if not already done
+
+
+3. Copy the following files from the JSCL repository (https://github.com/jscl-project/jscl) to the <youplace> directory:
+       - jquery.js
+       - style.css
+       - jqconsole.min.js
+
+4. Copy the following files obtained after compiling JSCL to the <youplace> directory:
+       - jscl.js
+       - jscl-web.js
+
+5. Create an HTML file in the <youplace> directory with the name <any-name-html>.html and the following content:
+
+// begin
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div id="console"></div>
+    <script src="./dist/jq/jquery.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./dist/jq-console/jqconsole.min.js" type="text/javascript" charset="utf-8"></script>
+    <script> var jqconsole = $("#console").jqconsole("", ""); </script>
+    <script src="jscl.js" type="text/javascript" charset="utf-8"></script>
+    <script src="jscl-web.js" type="text/javascript"></script>
+  </body>
+</html>
+
+// end
+
+6. Create a JS file in the <youplace> directory with the name <any-name-js>.js and the following content:
+
+// begin
+const electron = require('electron')
+const app = electron.app
+const BrowserWindow = electron.BrowserWindow
+const path = require('path')
+const url = require('url')
+const remote = require('@electron/remote/main')
+const process = require('process')
+let mainWindow
+// Render console process
+function createWindow () {
+    mainWindow = new BrowserWindow({
+        allowRunningInsecureContent: true,
+        width: 1100,
+        height: 700,
+        webPreferences: {
+             contextIsolation: false,
+            // Need for access to localStorage for console
+            webSecurity: false,
+            // Need for accesable node's funcs from console
+            nodeIntegration: true
+        }
+    })
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, '<any-name-html>'),
+        protocol: 'file:',
+        slashes: true
+    }))
+}
+app.on('ready', createWindow)
+app.on('window-all-closed', function () {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+})
+app.on('activate', function () {
+    if (mainWindow === null) {
+        createWindow()
+    }
+})
+// end
+
+7. Create a JSON file in the <youplace> directory with the name <any-name-json>.json and the following content:
+
+{
+  "name": "  ",
+  "version": "1.0.1",
+  "description": " Moren environment ",
+  "main": " <any-name-js>.js from step 6 ",
+  "scripts": {
+    "start": "electron <any-name-js>.js"
+  },
+  "keywords": [
+    "lisp",
+    "compiler"
+  ],
+  "license": " you license ",
+  "devDependencies": {
+    "electron": "^21.2.2"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.8",
+    "xterm": "^4.12.0",
+    "xterm-addon-fit": "^0.5.0",
+    "xterm-theme": "^1.1.0"
+  }
+}
+
+Note: fill in "dependencies" at your discretion
+
+
+8. Install the Electron
+
+   cd <youplace>
+   npm install --save-dev electron@latest
+
+9. You can run JSCL with the following commands:
+
+   cd <youplace>
+   npm start
+
+   OR
+   
+   cd <youplace>
+   node_modules\.bin\electron <any-name-js>
+
+10. You have received a full-fledged working Common Lisp environment. From now on you don't need to compile
+     files via SBCL/CCL.
+
+     To load the star-trek game use the LOAD command:
+
+
+    (load "./<youplace>/console.lisp" :verbose nil)
+    (load "./<youplace>/game.lisp" :verbose nil)
+    (load "./<youplace>/fsm.lisp" :verbose nil)
+    (launching)
+
+    OR
+
+    (setq bin #())
+    (load "./<youplace>/console.lisp" :verbose nil :hook bin)
+    (load "./<youplace>/game.lisp" :verbose nil :hook bin)
+    (load "./<youplace>/fsm.lisp" :verbose nil :hook bin -output "star-trek.js")
+
+
+     after executing these commands you will receive a file in <youplace> that is loaded without
+     compilation with the following command:
+     
+    (require "./star-trek.js")
+    
+    (launching)
+
+11. Do you need to have functions from HTML, CSS, FFI packages?
+    This is done like this:
+
+
+       (setq bin #())
+       (load "./<youplace>/ffi.lisp" :verbose nil :hook bin)
+       (load "./<youplace>/html.lisp" :verbose nil :hook bin)
+       (load "./<youplace>/css.lisp" :verbose nil :hook bin -output "bundle.js")
+
+
+    You can use the bundle.js file in one of the following ways:
+
+     - add the line to the file <any-name-html>.html (see step 5):
+
+              <script src="bundle.js" type="text/javascript"></script>
+              
+       the file will be downloaded when Electron starts
+
+     or
+     
+     - use the REQUIRE command:
+
+        (require "./bundle.js")
+
+
+    
