@@ -23,15 +23,14 @@ Under construction - redesign under __`JSCL Moren Edition`__, __`Electron`__ .
 
 <p align="center">
   <a href="https://github.com/vlad-km">
-    <img src="images/uss.bmp"/>
+    <img src="images/uss.png"/>
   </a>
 </p>
 
-In this implementation the stars are represented by the symbol _`*` _
 
 <p align="center">
   <a href="https://github.com/vlad-km">
-    <img src="images/mistart.bmp"/>
+    <img src="images/mistart.png"/>
   </a>
 </p>
 
