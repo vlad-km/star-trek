@@ -97,14 +97,14 @@ ___
 ### Commands
 
 - W  **`WARP`**
-- S  **`FOR SHORT RANGE SENSOR SCAN`**  _**`SHORT RANGE SENSOR SCAN
-       PRINTS THE QUADRANT YOU ARE CURRENTLY IN, INCLUDING
-       STARS, KLINGONS, STARBASES, AND THE ENTERPRISE; ALONG
-       WITH OTHER PERTINATE INFORMATION`**_
-- L  **`FOR LONG RANGE SENSOR SCAN`**  _**`SHOWS CONDITIONS IN SPACE FOR ONE QUADRANT ON EACH SIDE
-      OF THE ENTERPRISE IN THE MIDDLE OF THE SCAN. THE SCAN IS CODED IN THE FORM XXX,
-      WHERE THE UNITS DIGIT IS THE NUMBER OF STARS, THE TENS DIGIT IS THE NUMBER OF STAR-BASES,
-      THE HUNDREDS DIGIT IS THE NUMBER OF KLINGONS`**_
+- S  **`for short range sensor scan`**  _**`short range sensor scan
+       prints the quadrant you are currently in, inckuding
+       stars, klingons, starbases, and the Enterprise; along
+       with other pertinate information`**_
+- L  **`FOR LONG RANGE SENSOR SCAN`**  _**`shows conditions in space for one quadrant on each side
+      of the enterprise in the middle of the scan. the scan is coded in the form xxx,
+      where the units digit is the number of stars, the tens digit is the number of star-bases,
+      the hundreds digit is the number of klingons`**_
 - P  _`TO FIRE PHASERS`_
 - T  _`TO FIRE PHOTON TORPEDOES`_
 - Z  _`TO RAISE OR LOWER SHIELDS`_
